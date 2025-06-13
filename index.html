@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Render box1.json</title>
+  <title>Render box2.json</title>
   <style>
     body { margin: 0; overflow: hidden; }
     canvas { display: block; }
@@ -19,7 +19,7 @@
 
     const loader = new THREE.ObjectLoader();
 
-    loader.load('box1.json', function (loadedScene) {
+    loader.load('box2.json', function (loadedScene) {
       scene.add(loadedScene);
       animate();
     }, undefined, function (err) {
