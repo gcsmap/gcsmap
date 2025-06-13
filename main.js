@@ -1,3 +1,4 @@
+// ✅ Use full CDN imports — not 'three'
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 import { ObjectLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
@@ -13,12 +14,13 @@ camera.position.set(0, 2, 5);
 scene.add(camera);
 
 const controls = new OrbitControls(camera, renderer.domElement);
-scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
 
-const loader = new ObjectLoader();
+// ✅ Load scene.json properly
 fetch('scene.json')
   .then(res => res.json())
   .then(json => {
+    const loader = new ObjectLoader();
     const loadedScene = loader.parse(json.scene);
     scene.add(loadedScene);
 
