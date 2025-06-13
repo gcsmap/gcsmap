@@ -2,26 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>View JSON File</title>
+  <title>Render box1.json</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
-  <h1>Contents of box1.json</h1>
-  <pre id="jsonDisplay">Loading...</pre>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
   <script>
-    fetch('box1.json')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Could not load the JSON file.');
-        }
-        return response.json();
-      })
-      .then(data => {
-        document.getElementById('jsonDisplay').textContent = JSON.stringify(data, null, 2);
-      })
-      .catch(error => {
-        document.getElementById('jsonDisplay').textContent = error;
-      });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const loader = new THREE.ObjectLoader();
+
+    loader.load('box1.json', function (loadedScene) {
+      scene.add(loadedScene);
+      animate();
+    }, undefined, function (err) {
+      console.error('An error happened:', err);
+    });
+
+    camera.position.z = 5;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
   </script>
 </body>
 </html>
