@@ -1,43 +1,58 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-// Set up scene, camera, renderer
-const scene = new THREE.Scene();
-
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(0, 2, 5);
-
+// Basic renderer, scene, camera
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Add lighting
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(10, 10, 10);
-scene.add(light);
+const scene = new THREE.Scene();
 
-// Controls
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);
+camera.position.set(0, 2, 5);
+scene.add(camera);
+
 const controls = new OrbitControls(camera, renderer.domElement);
 
-// Load scene from JSON
-const loader = new THREE.ObjectLoader();
-loader.load('scene.json', function (loadedScene) {
-    scene.add(loadedScene);
-}, undefined, function (error) {
-    console.error('Error loading scene:', error);
-});
+// Add light in case something fails with imported light
+scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
-// Animate
+import { ObjectLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const loader = new ObjectLoader();
+
+loader.load(
+  'scene.json',
+  (loadedScene) => {
+    console.log('Scene loaded:', loadedScene);
+    scene.add(loadedScene);
+
+    // OPTIONAL: Visual debug box to ensure mesh exists
+    const box = loadedScene.getObjectByName("Box");
+    if (box) {
+      const helper = new THREE.BoxHelper(box, 0xff0000);
+      scene.add(helper);
+    } else {
+      console.warn("Box not found in loaded scene.");
+    }
+  },
+  undefined,
+  (err) => {
+    console.error('Failed to load scene.json:', err);
+  }
+);
+
+// Render loop
 function animate() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
 }
 animate();
 
-// Responsive resize
+// Handle resizing
 window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
