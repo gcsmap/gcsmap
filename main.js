@@ -1,5 +1,5 @@
 // ✅ Use full CDN imports — not 'three'
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import * as THREE from 'three';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 import { ObjectLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
