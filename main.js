@@ -1,33 +1,35 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import { ObjectLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-// Basic renderer, scene, camera
+// Set up renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Set up scene and camera
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 1000);
 camera.position.set(0, 2, 5);
 scene.add(camera);
 
+// Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 
-// Add light in case something fails with imported light
+// Ambient light
 scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
-import { ObjectLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-
+// Load scene.json manually
 const loader = new ObjectLoader();
 
-loader.load(
-  'scene.json',
-  (loadedScene) => {
-    console.log('Scene loaded:', loadedScene);
+fetch('scene.json')
+  .then(response => response.json())
+  .then(json => {
+    const loadedScene = loader.parse(json.scene); // assuming your scene is under the `scene` key
     scene.add(loadedScene);
 
-    // OPTIONAL: Visual debug box to ensure mesh exists
+    // Optional helper to show the box outline
     const box = loadedScene.getObjectByName("Box");
     if (box) {
       const helper = new THREE.BoxHelper(box, 0xff0000);
@@ -35,14 +37,12 @@ loader.load(
     } else {
       console.warn("Box not found in loaded scene.");
     }
-  },
-  undefined,
-  (err) => {
-    console.error('Failed to load scene.json:', err);
-  }
-);
+  })
+  .catch(error => {
+    console.error("Error loading scene.json:", error);
+  });
 
-// Render loop
+// Animation loop
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
@@ -50,7 +50,7 @@ function animate() {
 }
 animate();
 
-// Handle resizing
+// Responsive resize
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
