@@ -6,11 +6,11 @@ import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 // === SCENE SETUP ===
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6f0ff); // light blue
-scene.fog = new THREE.Fog(0xe6f0ff, 20, 50);   // fog
+scene.fog = new THREE.Fog(0xe6f0ff, 30, 100);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const viewDistance = 30;
+const viewDistance = 40;
 const initialCameraPosition = new THREE.Vector3(
   viewDistance * Math.sin(Math.PI / 4),
   viewDistance * Math.sin(Math.PI / 4),
@@ -41,52 +41,90 @@ directionalLight.position.set(10, 20, 10);
 directionalLight.castShadow = true;
 scene.add(directionalLight);
 
-// === GRID GROUND ===
-const grid = new THREE.GridHelper(50, 50);
+// === GRID HELPER (GROUND) ===
+const gridSize = 10;
+const gridSpacing = 2;
+const grid = new THREE.GridHelper(gridSize * gridSpacing, gridSize, 0x999999, 0xcccccc);
+grid.position.y = -0.5;
 scene.add(grid);
 
-// === GROUND RECEIVER ===
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(50, 50),
-  new THREE.ShadowMaterial({ opacity: 0.15 })
+// === GROUND PLANE ===
+const plane = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.ShadowMaterial({ opacity: 0.2 })
 );
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
+plane.rotation.x = -Math.PI / 2;
+plane.position.y = -0.5;
+plane.receiveShadow = true;
+scene.add(plane);
 
-// === MATERIAL ===
+// === TOOLTIP ===
+const tooltip = document.createElement('div');
+tooltip.style.position = 'absolute';
+tooltip.style.padding = '6px 12px';
+tooltip.style.background = 'rgba(0,0,0,0.6)';
+tooltip.style.color = 'white';
+tooltip.style.borderRadius = '5px';
+tooltip.style.pointerEvents = 'none';
+tooltip.style.display = 'none';
+tooltip.style.zIndex = '1';
+document.body.appendChild(tooltip);
+
+// === OBJECTS (CUBES ONLY) ===
+const cubes = [];
 const cubeMaterial = new THREE.MeshStandardMaterial({
   color: 0xd3d3d3,
   transparent: true,
   opacity: 0.6
 });
 
-// === SNAP TO TILE CENTER ===
-function snapToTileCenter(n) {
-  return Math.floor(n) + 0.5;
+for (let x = 0; x < gridSize; x++) {
+  for (let y = 0; y < 3; y++) {
+    for (let z = 0; z < gridSize; z++) {
+      const cube = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 1, 1),
+        cubeMaterial
+      );
+      cube.castShadow = true;
+      cube.receiveShadow = true;
+
+      const px = x * gridSpacing + gridSpacing / 2;
+      const py = y * 2 + 0.5;
+      const pz = z * gridSpacing + gridSpacing / 2;
+      cube.position.set(px, py, pz);
+
+      // Custom coordinate label
+      const coord = `${x + 1}.${String.fromCharCode(65 + y)}.${z + 1}`;
+      cube.userData.coordinate = coord;
+
+      scene.add(cube);
+      cubes.push(cube);
+    }
+  }
 }
 
-// === CUBE CREATION ===
-const cubes = [];
+// === HOVER DETECTION ===
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-function createCubeAtTile(x, z, y = 0.5) {
-  const cube = new THREE.Mesh(new THREE.BoxGeometry(), cubeMaterial);
-  cube.castShadow = true;
-  cube.receiveShadow = true;
-  cube.position.set(
-    snapToTileCenter(x),
-    y,
-    snapToTileCenter(z)
-  );
-  cubes.push(cube);
-  scene.add(cube);
+function onPointerMove(event) {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(cubes);
+
+  if (intersects.length > 0) {
+    const intersected = intersects[0].object;
+    tooltip.style.display = 'block';
+    tooltip.textContent = intersected.userData.coordinate;
+    tooltip.style.left = `${event.clientX + 10}px`;
+    tooltip.style.top = `${event.clientY + 10}px`;
+  } else {
+    tooltip.style.display = 'none';
+  }
 }
-
-createCubeAtTile(0, 0);
-createCubeAtTile(1, 1, 1.5);
-createCubeAtTile(-3, 2, 2.5);
-createCubeAtTile(4, -2, 0.5);
-createCubeAtTile(-5, -4, 1.5);
+window.addEventListener('pointermove', onPointerMove);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
@@ -136,65 +174,6 @@ createUIButton('🖥️ Fullscreen', () => {
     document.exitFullscreen();
   }
 }, '60px');
-
-// === COORDINATE TOOLTIP ===
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
-const tooltip = document.createElement('div');
-tooltip.style.position = 'absolute';
-tooltip.style.padding = '6px 12px';
-tooltip.style.background = 'rgba(0, 0, 0, 0.7)';
-tooltip.style.color = 'white';
-tooltip.style.borderRadius = '4px';
-tooltip.style.pointerEvents = 'none';
-tooltip.style.display = 'none';
-tooltip.style.fontSize = '14px';
-tooltip.style.zIndex = '10';
-document.body.appendChild(tooltip);
-
-// Convert numeric grid to chess notation
-function getChessCoord(pos) {
-  const xLetter = String.fromCharCode(65 + Math.floor(pos.x));
-  const zNumber = Math.floor(pos.z) + 1;
-  const yLevel = (pos.y - 0.5 + 0.1).toFixed(1); // starts at .1, .2, etc.
-  return `${xLetter}${zNumber}.${yLevel}`;
-}
-
-function onPointerMove(event) {
-  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(pointer, camera);
-  const intersects = raycaster.intersectObjects(cubes);
-  if (intersects.length > 0) {
-    const pos = intersects[0].object.position;
-    tooltip.textContent = getChessCoord(pos);
-    tooltip.style.left = `${event.clientX + 10}px`;
-    tooltip.style.top = `${event.clientY + 10}px`;
-    tooltip.style.display = 'block';
-  } else {
-    tooltip.style.display = 'none';
-  }
-}
-
-function onPointerTap(event) {
-  const x = event.touches ? event.touches[0].clientX : event.clientX;
-  const y = event.touches ? event.touches[0].clientY : event.clientY;
-  pointer.x = (x / window.innerWidth) * 2 - 1;
-  pointer.y = -(y / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(pointer, camera);
-  const intersects = raycaster.intersectObjects(cubes);
-  if (intersects.length > 0) {
-    const pos = intersects[0].object.position;
-    tooltip.textContent = getChessCoord(pos);
-    tooltip.style.left = `${x + 10}px`;
-    tooltip.style.top = `${y + 10}px`;
-    tooltip.style.display = 'block';
-    setTimeout(() => tooltip.style.display = 'none', 1500);
-  }
-}
-
-window.addEventListener('mousemove', onPointerMove);
-window.addEventListener('touchstart', onPointerTap);
 
 // === RESIZE HANDLER ===
 window.addEventListener('resize', () => {
