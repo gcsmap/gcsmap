@@ -1,13 +1,13 @@
 // Import from CDN
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
-import { DragControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/DragControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/renderers/CSS2DRenderer.js';
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 
 // === SCENE SETUP ===
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe6f0ff); // light blue
-scene.fog = new THREE.Fog(0xe6f0ff, 20, 50);   // Fog starts near, ends far
+scene.background = new THREE.Color(0xe6f0ff); // Light blue
+scene.fog = new THREE.Fog(0xe6f0ff, 20, 50);   // Fog
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(
@@ -22,10 +22,19 @@ const initialCameraPosition = new THREE.Vector3(
 camera.position.copy(initialCameraPosition);
 const initialTarget = new THREE.Vector3(0, 0, 0);
 
-// === RENDERER ===
+// === RENDERERS ===
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
+
+// Label Renderer
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0px';
+labelRenderer.domElement.style.pointerEvents = 'none';
+document.body.appendChild(labelRenderer.domElement);
 
 // === CONTROLS ===
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -36,111 +45,39 @@ controls.maxPolarAngle = Math.PI / 2;
 controls.target.copy(initialTarget);
 controls.update();
 
-// === LIGHTS ===
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+// === LIGHTING ===
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(10, 20, 10);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
 scene.add(directionalLight);
 
-// === GRID HELPER (GROUND) ===
+// === GRID + GROUND PLANE ===
 const grid = new THREE.GridHelper(50, 50);
 scene.add(grid);
 
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(50, 50),
+  new THREE.ShadowMaterial({ opacity: 0.2 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
 // === OBJECTS ===
-const dragObjects = [];
+function createLabeledObject(mesh, labelText) {
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
 
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(),
-  new THREE.MeshStandardMaterial({
-    color: 0xd3d3d3,
-    transparent: true,
-    opacity: 0.6
-  })
-);
-dragObjects.push(cube);
-scene.add(cube);
-
-const sphere = new THREE.Mesh(
-  new THREE.SphereGeometry(0.5, 32, 32),
-  new THREE.MeshStandardMaterial({ color: 'skyblue' })
-);
-sphere.position.set(-3, 0, 0);
-dragObjects.push(sphere);
-scene.add(sphere);
-
-const cone = new THREE.Mesh(
-  new THREE.ConeGeometry(0.5, 1, 32),
-  new THREE.MeshStandardMaterial({ color: 'orange' })
-);
-cone.position.set(3, 0, 0);
-dragObjects.push(cone);
-scene.add(cone);
-
-// === DRAG CONTROLS ===
-const dragControls = new DragControls(dragObjects, camera, renderer.domElement);
-dragControls.addEventListener('dragstart', () => controls.enabled = false);
-dragControls.addEventListener('dragend', () => controls.enabled = true);
-
-// === UI BUTTONS ===
-function createUIButton(text, onClick, topOffset) {
-  const btn = document.createElement('button');
-  btn.textContent = text;
-  btn.style.position = 'absolute';
-  btn.style.top = topOffset;
-  btn.style.left = '50%';
-  btn.style.transform = 'translateX(-50%)';
-  btn.style.padding = '10px 20px';
-  btn.style.background = 'rgba(0, 0, 0, 0.3)';
-  btn.style.color = 'white';
-  btn.style.border = '1px solid white';
-  btn.style.borderRadius = '8px';
-  btn.style.cursor = 'pointer';
-  btn.style.zIndex = '1';
-  btn.style.backdropFilter = 'blur(5px)';
-  btn.addEventListener('click', onClick);
-  document.body.appendChild(btn);
-}
-
-// Reset View
-createUIButton('🔄 Reset View', () => {
-  gsap.to(camera.position, {
-    duration: 1.2,
-    x: initialCameraPosition.x,
-    y: initialCameraPosition.y,
-    z: initialCameraPosition.z,
-    onUpdate: () => controls.update()
-  });
-  gsap.to(controls.target, {
-    duration: 1.2,
-    x: initialTarget.x,
-    y: initialTarget.y,
-    z: initialTarget.z,
-    onUpdate: () => controls.update()
-  });
-}, '20px');
-
-// Fullscreen
-createUIButton('🖥️ Fullscreen', () => {
-  if (!document.fullscreenElement) {
-    document.body.requestFullscreen().catch(err =>
-      alert(`Error: ${err.message}`)
-    );
-  } else {
-    document.exitFullscreen();
-  }
-}, '60px');
-
-// === RESIZE HANDLER ===
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// === ANIMATION LOOP ===
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
+  const div = document.createElement('div');
+  div.className = 'label';
+  div.textContent = labelText;
+  div.style.marginTop = '-1em';
+  div.style.color = 'black';
+  div.style.fontSize = '14px';
+  div.style.fontFamily = 'Arial';
+  div.style.backgroundColor = 'rgba(255,255,255,0.7
