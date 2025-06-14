@@ -1,47 +1,48 @@
-// BASIC SETUP
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.158.0/examples/jsm/controls/OrbitControls.js';
+import { FontLoader } from 'https://unpkg.com/three@0.158.0/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'https://unpkg.com/three@0.158.0/examples/jsm/geometries/TextGeometry.js';
+
+// Scene, camera, renderer
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 camera.position.z = 4;
 
-var renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setClearColor("#000000");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor('#000000');
 document.body.appendChild(renderer.domElement);
 
-// Add OrbitControls
-var controls = new THREE.OrbitControls(camera, renderer.domElement);
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
 
-// Create a Cube
-var geometry = new THREE.BoxGeometry(1, 1, 1);
-var material = new THREE.MeshBasicMaterial({ color: "#433F81" });
-var cube = new THREE.Mesh(geometry, material);
+// Cube
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshBasicMaterial({ color: '#433F81' });
+const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
-// Load font and add label
-var loader = new THREE.FontLoader();
-loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-  var textGeometry = new THREE.TextGeometry('A107', {
+// Text label "A107"
+const loader = new FontLoader();
+loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+  const textGeometry = new TextGeometry('A107', {
     font: font,
     size: 0.2,
     height: 0.01
   });
-  var textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  var textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-  // Position the text slightly in front of the cube's front face
-  textMesh.position.set(-0.3, -0.1, 0.51);
-  cube.add(textMesh); // attach text to cube so it rotates with it
+  const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+  textMesh.position.set(-0.3, -0.1, 0.51); // front face
+  cube.add(textMesh); // rotates with cube
 });
 
-// RENDER LOOP
-var render = function () {
-  requestAnimationFrame(render);
-
+// Animation loop
+function animate() {
+  requestAnimationFrame(animate);
   cube.rotation.x += 0.01;
   cube.rotation.y += 0.01;
-
   controls.update();
   renderer.render(scene, camera);
-};
+}
 
-render();
+animate();
