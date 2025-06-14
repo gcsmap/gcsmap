@@ -13,7 +13,11 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.z = 5;
+camera.position.set(0, 0, 5); // Set initial position
+
+// Store the initial camera position and target
+const initialCameraPosition = camera.position.clone();
+const initialTarget = new THREE.Vector3(0, 0, 0);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -46,6 +50,23 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ✅ Add Reset Button
+const button = document.createElement('button');
+button.textContent = "Reset View";
+button.style.position = "absolute";
+button.style.top = "10px";
+button.style.left = "10px";
+button.style.padding = "8px 12px";
+button.style.zIndex = "1";
+document.body.appendChild(button);
+
+// ✅ Reset camera and controls on button click
+button.addEventListener('click', () => {
+  camera.position.copy(initialCameraPosition);
+  controls.target.copy(initialTarget);
+  controls.update(); // apply the new target and position
 });
 
 // Animate (no cube rotation)
