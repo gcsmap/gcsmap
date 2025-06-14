@@ -1,4 +1,5 @@
 // Import from CDN
+import * as THREE from 'three';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
 
 // Scene and background
