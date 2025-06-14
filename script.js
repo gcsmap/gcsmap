@@ -24,6 +24,8 @@ const initialTarget = new THREE.Vector3(0, 0, 0);
 // === RENDERER ===
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 // === CONTROLS ===
@@ -36,16 +38,36 @@ controls.target.copy(initialTarget);
 controls.update();
 
 // === LIGHTS ===
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambientLight);
+
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(10, 20, 10);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.set(2048, 2048);
+directionalLight.shadow.camera.left = -30;
+directionalLight.shadow.camera.right = 30;
+directionalLight.shadow.camera.top = 30;
+directionalLight.shadow.camera.bottom = -30;
 scene.add(directionalLight);
 
-// === GRID HELPER ===
+// === SHADOW RECEIVING GROUND PLANE ===
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(100, 100),
+  new THREE.ShadowMaterial({ opacity: 0.2 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = 0;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// === HELPER GRID ON TOP OF GROUND ===
 const grid = new THREE.GridHelper(50, 50);
+grid.material.opacity = 0.4;
+grid.material.transparent = true;
 scene.add(grid);
 
-// === SHARED MATERIAL ===
+// === SHARED MATERIAL FOR CUBES ===
 const cubeMaterial = new THREE.MeshStandardMaterial({
   color: 0xd3d3d3,
   transparent: true,
@@ -60,9 +82,11 @@ function snapToTileCenter(value, gridUnit = 1) {
 // === CREATE CUBE AT TILE CENTER ===
 function createCubeAtTile(x, z) {
   const cube = new THREE.Mesh(new THREE.BoxGeometry(), cubeMaterial);
+  cube.castShadow = true;
+  cube.receiveShadow = true;
   cube.position.set(
     snapToTileCenter(x),
-    0.5, // half height to sit on ground
+    0.5,
     snapToTileCenter(z)
   );
   scene.add(cube);
