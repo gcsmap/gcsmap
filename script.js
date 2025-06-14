@@ -1,7 +1,6 @@
 // Import from CDN
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
-import { DragControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/DragControls.js';
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 
 // === SCENE SETUP ===
@@ -32,7 +31,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.minPolarAngle = 0;
-controls.maxPolarAngle = Math.PI / 2;
+controls.maxPolarAngle = Math.PI / 2; // prevent going below geometry
 controls.target.copy(initialTarget);
 controls.update();
 
@@ -47,8 +46,6 @@ const grid = new THREE.GridHelper(50, 50);
 scene.add(grid);
 
 // === OBJECTS ===
-const dragObjects = [];
-
 const cube = new THREE.Mesh(
   new THREE.BoxGeometry(),
   new THREE.MeshStandardMaterial({
@@ -57,7 +54,6 @@ const cube = new THREE.Mesh(
     opacity: 0.6
   })
 );
-dragObjects.push(cube);
 scene.add(cube);
 
 const sphere = new THREE.Mesh(
@@ -65,7 +61,6 @@ const sphere = new THREE.Mesh(
   new THREE.MeshStandardMaterial({ color: 'skyblue' })
 );
 sphere.position.set(-3, 0, 0);
-dragObjects.push(sphere);
 scene.add(sphere);
 
 const cone = new THREE.Mesh(
@@ -73,13 +68,7 @@ const cone = new THREE.Mesh(
   new THREE.MeshStandardMaterial({ color: 'orange' })
 );
 cone.position.set(3, 0, 0);
-dragObjects.push(cone);
 scene.add(cone);
-
-// === DRAG CONTROLS ===
-const dragControls = new DragControls(dragObjects, camera, renderer.domElement);
-dragControls.addEventListener('dragstart', () => controls.enabled = false);
-dragControls.addEventListener('dragend', () => controls.enabled = true);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
