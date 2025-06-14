@@ -30,7 +30,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.minPolarAngle = 0;
-controls.maxPolarAngle = Math.PI / 2; // prevent going under ground
+controls.maxPolarAngle = Math.PI / 2;
 controls.target.copy(initialTarget);
 controls.update();
 
@@ -69,13 +69,13 @@ function snapToTileCenter(n) {
 // === CUBE CREATION ===
 const cubes = [];
 
-function createCubeAtTile(x, z) {
+function createCubeAtTile(x, z, y = 0.5) {
   const cube = new THREE.Mesh(new THREE.BoxGeometry(), cubeMaterial);
   cube.castShadow = true;
   cube.receiveShadow = true;
   cube.position.set(
     snapToTileCenter(x),
-    0.5,
+    y,
     snapToTileCenter(z)
   );
   cubes.push(cube);
@@ -83,10 +83,10 @@ function createCubeAtTile(x, z) {
 }
 
 createCubeAtTile(0, 0);
-createCubeAtTile(1, 1);
-createCubeAtTile(-3, 2);
-createCubeAtTile(4, -2);
-createCubeAtTile(-5, -4);
+createCubeAtTile(1, 1, 1.5);
+createCubeAtTile(-3, 2, 2.5);
+createCubeAtTile(4, -2, 0.5);
+createCubeAtTile(-5, -4, 1.5);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
@@ -152,6 +152,14 @@ tooltip.style.fontSize = '14px';
 tooltip.style.zIndex = '10';
 document.body.appendChild(tooltip);
 
+// Convert numeric grid to chess notation
+function getChessCoord(pos) {
+  const xLetter = String.fromCharCode(65 + Math.floor(pos.x));
+  const zNumber = Math.floor(pos.z) + 1;
+  const yLevel = (pos.y - 0.5 + 0.1).toFixed(1); // starts at .1, .2, etc.
+  return `${xLetter}${zNumber}.${yLevel}`;
+}
+
 function onPointerMove(event) {
   pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -159,7 +167,7 @@ function onPointerMove(event) {
   const intersects = raycaster.intersectObjects(cubes);
   if (intersects.length > 0) {
     const pos = intersects[0].object.position;
-    tooltip.textContent = `X: ${pos.x.toFixed(1)}, Y: ${pos.y.toFixed(1)}, Z: ${pos.z.toFixed(1)}`;
+    tooltip.textContent = getChessCoord(pos);
     tooltip.style.left = `${event.clientX + 10}px`;
     tooltip.style.top = `${event.clientY + 10}px`;
     tooltip.style.display = 'block';
@@ -177,7 +185,7 @@ function onPointerTap(event) {
   const intersects = raycaster.intersectObjects(cubes);
   if (intersects.length > 0) {
     const pos = intersects[0].object.position;
-    tooltip.textContent = `X: ${pos.x.toFixed(1)}, Y: ${pos.y.toFixed(1)}, Z: ${pos.z.toFixed(1)}`;
+    tooltip.textContent = getChessCoord(pos);
     tooltip.style.left = `${x + 10}px`;
     tooltip.style.top = `${y + 10}px`;
     tooltip.style.display = 'block';
