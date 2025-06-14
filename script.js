@@ -6,7 +6,7 @@ import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 // === SCENE SETUP ===
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6f0ff); // light blue
-scene.fog = new THREE.Fog(0xe6f0ff, 20, 50);   // Fog starts near, ends far
+scene.fog = new THREE.Fog(0xe6f0ff, 20, 50);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(
@@ -41,42 +41,39 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(10, 20, 10);
 scene.add(directionalLight);
 
-// === GRID HELPER (GROUND) ===
-const gridSize = 50;
-const gridDivisions = 50;
-const grid = new THREE.GridHelper(gridSize, gridDivisions);
+// === GRID HELPER ===
+const grid = new THREE.GridHelper(50, 50);
 scene.add(grid);
 
-// === MATERIAL SHARED FOR ALL CUBES ===
+// === SHARED MATERIAL ===
 const cubeMaterial = new THREE.MeshStandardMaterial({
   color: 0xd3d3d3,
   transparent: true,
   opacity: 0.6
 });
 
-// === FUNCTION: Snap to Grid ===
-function snapToGrid(value, gridUnit = 1) {
-  return Math.round(value / gridUnit) * gridUnit;
+// === SNAP TO TILE CENTER ===
+function snapToTileCenter(value, gridUnit = 1) {
+  return Math.floor(value / gridUnit) * gridUnit + gridUnit / 2;
 }
 
-// === FUNCTION: Create Cube at Grid Position ===
-function createCubeAt(x, z) {
+// === CREATE CUBE AT TILE CENTER ===
+function createCubeAtTile(x, z) {
   const cube = new THREE.Mesh(new THREE.BoxGeometry(), cubeMaterial);
   cube.position.set(
-    snapToGrid(x),
-    0.5, // Half-height so it sits on the ground
-    snapToGrid(z)
+    snapToTileCenter(x),
+    0.5, // half height to sit on ground
+    snapToTileCenter(z)
   );
   scene.add(cube);
 }
 
-// === ADD MULTIPLE CUBES IN GRID ===
-// Example layout: center and 4 corners
-createCubeAt(0, 0);
-createCubeAt(-5, -5);
-createCubeAt(5, -5);
-createCubeAt(-5, 5);
-createCubeAt(5, 5);
+// === PLACE SOME CUBES ===
+createCubeAtTile(0, 0);
+createCubeAtTile(1, 1);
+createCubeAtTile(-3, 2);
+createCubeAtTile(4, -2);
+createCubeAtTile(-5, -4);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
