@@ -6,7 +6,7 @@ document.body.appendChild(renderer.domElement);
 
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshBasicMaterial({color: "red"});
-constcube = new THREE.Mesh(geometry,material);
+const cube = new THREE.Mesh(geometry,material);
 scene.add(cube);
 
 camera.position.z = 5;
