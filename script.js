@@ -31,7 +31,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.minPolarAngle = 0;
-controls.maxPolarAngle = Math.PI / 2; // prevent going below geometry
+controls.maxPolarAngle = Math.PI / 2;
 controls.target.copy(initialTarget);
 controls.update();
 
@@ -42,33 +42,41 @@ directionalLight.position.set(10, 20, 10);
 scene.add(directionalLight);
 
 // === GRID HELPER (GROUND) ===
-const grid = new THREE.GridHelper(50, 50);
+const gridSize = 50;
+const gridDivisions = 50;
+const grid = new THREE.GridHelper(gridSize, gridDivisions);
 scene.add(grid);
 
-// === OBJECTS ===
-const cube = new THREE.Mesh(
-  new THREE.BoxGeometry(),
-  new THREE.MeshStandardMaterial({
-    color: 0xd3d3d3,
-    transparent: true,
-    opacity: 0.6
-  })
-);
-scene.add(cube);
+// === MATERIAL SHARED FOR ALL CUBES ===
+const cubeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xd3d3d3,
+  transparent: true,
+  opacity: 0.6
+});
 
-const sphere = new THREE.Mesh(
-  new THREE.SphereGeometry(0.5, 32, 32),
-  new THREE.MeshStandardMaterial({ color: 'skyblue' })
-);
-sphere.position.set(-3, 0, 0);
-scene.add(sphere);
+// === FUNCTION: Snap to Grid ===
+function snapToGrid(value, gridUnit = 1) {
+  return Math.round(value / gridUnit) * gridUnit;
+}
 
-const cone = new THREE.Mesh(
-  new THREE.ConeGeometry(0.5, 1, 32),
-  new THREE.MeshStandardMaterial({ color: 'orange' })
-);
-cone.position.set(3, 0, 0);
-scene.add(cone);
+// === FUNCTION: Create Cube at Grid Position ===
+function createCubeAt(x, z) {
+  const cube = new THREE.Mesh(new THREE.BoxGeometry(), cubeMaterial);
+  cube.position.set(
+    snapToGrid(x),
+    0.5, // Half-height so it sits on the ground
+    snapToGrid(z)
+  );
+  scene.add(cube);
+}
+
+// === ADD MULTIPLE CUBES IN GRID ===
+// Example layout: center and 4 corners
+createCubeAt(0, 0);
+createCubeAt(-5, -5);
+createCubeAt(5, -5);
+createCubeAt(-5, 5);
+createCubeAt(5, 5);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
