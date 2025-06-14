@@ -1,75 +1,87 @@
 // Import from CDN
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
+import { DragControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/DragControls.js';
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 
-// Scene and background
+// === SCENE SETUP ===
 const scene = new THREE.Scene();
-scene.background = new THREE.Color("white");
+scene.background = new THREE.Color(0xe6f0ff); // light blue
+scene.fog = new THREE.Fog(0xe6f0ff, 20, 50);   // Fog starts near, ends far
 
-// Camera
+// === CAMERA ===
 const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
+  75, window.innerWidth / window.innerHeight, 0.1, 1000
 );
-
-// Initial camera setup (45° angle)
-const radius = 5;
+const viewDistance = 30;
 const initialCameraPosition = new THREE.Vector3(
-  radius * Math.sin(Math.PI / 4),
-  radius * Math.sin(Math.PI / 4),
-  radius * Math.cos(Math.PI / 4)
+  viewDistance * Math.sin(Math.PI / 4),
+  viewDistance * Math.sin(Math.PI / 4),
+  viewDistance * Math.cos(Math.PI / 4)
 );
 camera.position.copy(initialCameraPosition);
 const initialTarget = new THREE.Vector3(0, 0, 0);
 
-// Renderer
+// === RENDERER ===
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// OrbitControls
+// === CONTROLS ===
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.enableZoom = true;
-controls.enablePan = true;
+controls.minPolarAngle = 0;
+controls.maxPolarAngle = Math.PI / 2;
 controls.target.copy(initialTarget);
 controls.update();
 
-// Lighting
+// === LIGHTS ===
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(5, 5, 5);
+directionalLight.position.set(10, 20, 10);
 scene.add(directionalLight);
 
-// === SHAPES ===
-// Cube (center)
+// === GRID HELPER (GROUND) ===
+const grid = new THREE.GridHelper(50, 50);
+scene.add(grid);
+
+// === OBJECTS ===
+const dragObjects = [];
+
 const cube = new THREE.Mesh(
   new THREE.BoxGeometry(),
-  new THREE.MeshStandardMaterial({ color: 'grey' })
+  new THREE.MeshStandardMaterial({
+    color: 0xd3d3d3,
+    transparent: true,
+    opacity: 0.6
+  })
 );
+dragObjects.push(cube);
 scene.add(cube);
 
-// Sphere (left)
 const sphere = new THREE.Mesh(
   new THREE.SphereGeometry(0.5, 32, 32),
   new THREE.MeshStandardMaterial({ color: 'skyblue' })
 );
-sphere.position.set(-2, 0, 0);
+sphere.position.set(-3, 0, 0);
+dragObjects.push(sphere);
 scene.add(sphere);
 
-// Cone (right)
 const cone = new THREE.Mesh(
   new THREE.ConeGeometry(0.5, 1, 32),
   new THREE.MeshStandardMaterial({ color: 'orange' })
 );
-cone.position.set(2, 0, 0);
+cone.position.set(3, 0, 0);
+dragObjects.push(cone);
 scene.add(cone);
 
-// === UI STYLES ===
+// === DRAG CONTROLS ===
+const dragControls = new DragControls(dragObjects, camera, renderer.domElement);
+dragControls.addEventListener('dragstart', () => controls.enabled = false);
+dragControls.addEventListener('dragend', () => controls.enabled = true);
+
+// === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
   const btn = document.createElement('button');
   btn.textContent = text;
@@ -89,43 +101,43 @@ function createUIButton(text, onClick, topOffset) {
   document.body.appendChild(btn);
 }
 
-// === Reset View Button with Animation ===
+// Reset View
 createUIButton('🔄 Reset View', () => {
   gsap.to(camera.position, {
-    duration: 1,
+    duration: 1.2,
     x: initialCameraPosition.x,
     y: initialCameraPosition.y,
     z: initialCameraPosition.z,
-    onUpdate: () => controls.update(),
+    onUpdate: () => controls.update()
   });
   gsap.to(controls.target, {
-    duration: 1,
+    duration: 1.2,
     x: initialTarget.x,
     y: initialTarget.y,
     z: initialTarget.z,
-    onUpdate: () => controls.update(),
+    onUpdate: () => controls.update()
   });
 }, '20px');
 
-// === Fullscreen Button ===
+// Fullscreen
 createUIButton('🖥️ Fullscreen', () => {
   if (!document.fullscreenElement) {
     document.body.requestFullscreen().catch(err =>
-      alert(`Error attempting to enable fullscreen: ${err.message}`)
+      alert(`Error: ${err.message}`)
     );
   } else {
     document.exitFullscreen();
   }
 }, '60px');
 
-// === Resize Handler ===
+// === RESIZE HANDLER ===
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// === Animation Loop ===
+// === ANIMATION LOOP ===
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
