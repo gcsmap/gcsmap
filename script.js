@@ -1,6 +1,7 @@
 // Import from CDN
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
+import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 
 // Scene and background
 const scene = new THREE.Scene();
@@ -14,36 +15,20 @@ const camera = new THREE.PerspectiveCamera(
   1000
 );
 
-// Set initial position to 45° from top and 45° from left
+// Initial camera setup (45° angle)
 const radius = 5;
 const initialCameraPosition = new THREE.Vector3(
-  radius * Math.sin(Math.PI / 4), // x
-  radius * Math.sin(Math.PI / 4), // y
-  radius * Math.cos(Math.PI / 4)  // z
+  radius * Math.sin(Math.PI / 4),
+  radius * Math.sin(Math.PI / 4),
+  radius * Math.cos(Math.PI / 4)
 );
 camera.position.copy(initialCameraPosition);
-
-// Target the center of the scene
 const initialTarget = new THREE.Vector3(0, 0, 0);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
-// Grey cube
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshStandardMaterial({ color: "grey" });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
-
-// Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(5, 5, 5);
-scene.add(directionalLight);
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -54,38 +39,93 @@ controls.enablePan = true;
 controls.target.copy(initialTarget);
 controls.update();
 
-// Handle resizing
+// Lighting
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 5, 5);
+scene.add(directionalLight);
+
+// === SHAPES ===
+// Cube (center)
+const cube = new THREE.Mesh(
+  new THREE.BoxGeometry(),
+  new THREE.MeshStandardMaterial({ color: 'grey' })
+);
+scene.add(cube);
+
+// Sphere (left)
+const sphere = new THREE.Mesh(
+  new THREE.SphereGeometry(0.5, 32, 32),
+  new THREE.MeshStandardMaterial({ color: 'skyblue' })
+);
+sphere.position.set(-2, 0, 0);
+scene.add(sphere);
+
+// Cone (right)
+const cone = new THREE.Mesh(
+  new THREE.ConeGeometry(0.5, 1, 32),
+  new THREE.MeshStandardMaterial({ color: 'orange' })
+);
+cone.position.set(2, 0, 0);
+scene.add(cone);
+
+// === UI STYLES ===
+function createUIButton(text, onClick, topOffset) {
+  const btn = document.createElement('button');
+  btn.textContent = text;
+  btn.style.position = 'absolute';
+  btn.style.top = topOffset;
+  btn.style.left = '50%';
+  btn.style.transform = 'translateX(-50%)';
+  btn.style.padding = '10px 20px';
+  btn.style.background = 'rgba(0, 0, 0, 0.3)';
+  btn.style.color = 'white';
+  btn.style.border = '1px solid white';
+  btn.style.borderRadius = '8px';
+  btn.style.cursor = 'pointer';
+  btn.style.zIndex = '1';
+  btn.style.backdropFilter = 'blur(5px)';
+  btn.addEventListener('click', onClick);
+  document.body.appendChild(btn);
+}
+
+// === Reset View Button with Animation ===
+createUIButton('🔄 Reset View', () => {
+  gsap.to(camera.position, {
+    duration: 1,
+    x: initialCameraPosition.x,
+    y: initialCameraPosition.y,
+    z: initialCameraPosition.z,
+    onUpdate: () => controls.update(),
+  });
+  gsap.to(controls.target, {
+    duration: 1,
+    x: initialTarget.x,
+    y: initialTarget.y,
+    z: initialTarget.z,
+    onUpdate: () => controls.update(),
+  });
+}, '20px');
+
+// === Fullscreen Button ===
+createUIButton('🖥️ Fullscreen', () => {
+  if (!document.fullscreenElement) {
+    document.body.requestFullscreen().catch(err =>
+      alert(`Error attempting to enable fullscreen: ${err.message}`)
+    );
+  } else {
+    document.exitFullscreen();
+  }
+}, '60px');
+
+// === Resize Handler ===
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ✅ Add Reset Button (styled with transparency)
-const button = document.createElement('button');
-button.textContent = "Reset View";
-button.style.position = "absolute";
-button.style.top = "20px";
-button.style.left = "50%";
-button.style.transform = "translateX(-50%)";
-button.style.padding = "10px 20px";
-button.style.background = "rgba(0, 0, 0, 0.3)";
-button.style.color = "white";
-button.style.border = "1px solid white";
-button.style.borderRadius = "8px";
-button.style.cursor = "pointer";
-button.style.zIndex = "1";
-button.style.backdropFilter = "blur(5px)";
-document.body.appendChild(button);
-
-// ✅ Reset camera and controls on button click
-button.addEventListener('click', () => {
-  camera.position.copy(initialCameraPosition);
-  controls.target.copy(initialTarget);
-  controls.update();
-});
-
-// Animate
+// === Animation Loop ===
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
