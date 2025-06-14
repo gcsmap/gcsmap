@@ -1,5 +1,5 @@
 // Import from CDN
-import * as THREE from 'three';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
 
 // Scene and background
@@ -13,10 +13,17 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 0, 5); // Set initial position
 
-// Store the initial camera position and target
-const initialCameraPosition = camera.position.clone();
+// Set initial position to 45° from top and 45° from left
+const radius = 5;
+const initialCameraPosition = new THREE.Vector3(
+  radius * Math.sin(Math.PI / 4), // x
+  radius * Math.sin(Math.PI / 4), // y
+  radius * Math.cos(Math.PI / 4)  // z
+);
+camera.position.copy(initialCameraPosition);
+
+// Target the center of the scene
 const initialTarget = new THREE.Vector3(0, 0, 0);
 
 // Renderer
@@ -44,6 +51,8 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.enableZoom = true;
 controls.enablePan = true;
+controls.target.copy(initialTarget);
+controls.update();
 
 // Handle resizing
 window.addEventListener('resize', () => {
@@ -52,24 +61,31 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ✅ Add Reset Button
+// ✅ Add Reset Button (styled with transparency)
 const button = document.createElement('button');
 button.textContent = "Reset View";
 button.style.position = "absolute";
-button.style.top = "10px";
-button.style.left = "10px";
-button.style.padding = "8px 12px";
+button.style.top = "20px";
+button.style.left = "50%";
+button.style.transform = "translateX(-50%)";
+button.style.padding = "10px 20px";
+button.style.background = "rgba(0, 0, 0, 0.3)";
+button.style.color = "white";
+button.style.border = "1px solid white";
+button.style.borderRadius = "8px";
+button.style.cursor = "pointer";
 button.style.zIndex = "1";
+button.style.backdropFilter = "blur(5px)";
 document.body.appendChild(button);
 
 // ✅ Reset camera and controls on button click
 button.addEventListener('click', () => {
   camera.position.copy(initialCameraPosition);
   controls.target.copy(initialTarget);
-  controls.update(); // apply the new target and position
+  controls.update();
 });
 
-// Animate (no cube rotation)
+// Animate
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
