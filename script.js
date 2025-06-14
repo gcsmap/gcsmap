@@ -10,7 +10,7 @@ scene.fog = new THREE.Fog(0xe6f0ff, 30, 100);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const viewDistance = 30;
+const viewDistance = 20;
 const initialCameraPosition = new THREE.Vector3(
   viewDistance * Math.sin(Math.PI / 4),
   viewDistance * Math.sin(Math.PI / 4),
@@ -36,14 +36,16 @@ controls.update();
 
 // === LIGHTS ===
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(10, 20, 10);
-directionalLight.castShadow = true;
-scene.add(directionalLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+dirLight.position.set(10, 20, 10);
+dirLight.castShadow = true;
+scene.add(dirLight);
 
 // === GRID & GROUND ===
-const gridSpacing = 2;
-const grid = new THREE.GridHelper(20, 10, 0x999999, 0xcccccc);
+const tileSize = 1;
+const gridSize = 10;
+
+const grid = new THREE.GridHelper(gridSize, gridSize, 0x999999, 0xcccccc);
 grid.position.y = -0.5;
 scene.add(grid);
 
@@ -68,28 +70,33 @@ tooltip.style.display = 'none';
 tooltip.style.zIndex = '1';
 document.body.appendChild(tooltip);
 
-// === CUBES ON GROUND ONLY ===
+// === CUBES ===
 const cubeMaterial = new THREE.MeshStandardMaterial({
   color: 0xd3d3d3,
   transparent: true,
   opacity: 0.6
 });
+
 const cubes = [];
 
 const positions = [
   [0, 0, 0],  // 1.A.1
-  [1, 0, 1],  // 2.A.2
-  [2, 0, 2],  // 3.A.3
+  [1, 0, 0],  // 2.A.1
+  [2, 0, 0]   // 3.A.1
 ];
 
 positions.forEach(([x, y, z]) => {
-  const cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), cubeMaterial);
+  const cube = new THREE.Mesh(
+    new THREE.BoxGeometry(tileSize, tileSize, tileSize),
+    cubeMaterial
+  );
   cube.castShadow = true;
   cube.receiveShadow = true;
 
-  const px = x * gridSpacing + gridSpacing / 2;
-  const py = 0.5; // on plane
-  const pz = z * gridSpacing + gridSpacing / 2;
+  const px = x * tileSize + tileSize / 2 - gridSize / 2;
+  const py = tileSize / 2;
+  const pz = z * tileSize + tileSize / 2 - gridSize / 2;
+
   cube.position.set(px, py, pz);
 
   cube.userData.coordinate = `${x + 1}.${String.fromCharCode(65 + y)}.${z + 1}`;
@@ -97,11 +104,11 @@ positions.forEach(([x, y, z]) => {
   scene.add(cube);
 });
 
-// === HOVER COORDINATE ===
+// === HOVER COORDINATE DISPLAY ===
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
-function onPointerMove(event) {
+window.addEventListener('pointermove', (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -109,16 +116,15 @@ function onPointerMove(event) {
   const intersects = raycaster.intersectObjects(cubes);
 
   if (intersects.length > 0) {
-    const intersected = intersects[0].object;
+    const cube = intersects[0].object;
+    tooltip.textContent = cube.userData.coordinate;
     tooltip.style.display = 'block';
-    tooltip.textContent = intersected.userData.coordinate;
     tooltip.style.left = `${event.clientX + 10}px`;
     tooltip.style.top = `${event.clientY + 10}px`;
   } else {
     tooltip.style.display = 'none';
   }
-}
-window.addEventListener('pointermove', onPointerMove);
+});
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
@@ -140,6 +146,7 @@ function createUIButton(text, onClick, topOffset) {
   document.body.appendChild(btn);
 }
 
+// Reset View Button
 createUIButton('🔄 Reset View', () => {
   gsap.to(camera.position, {
     duration: 1.2,
@@ -157,6 +164,7 @@ createUIButton('🔄 Reset View', () => {
   });
 }, '20px');
 
+// Fullscreen Toggle
 createUIButton('🖥️ Fullscreen', () => {
   if (!document.fullscreenElement) {
     document.body.requestFullscreen().catch(err =>
