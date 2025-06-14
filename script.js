@@ -3,30 +3,28 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.m
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 
-// Scene and background
+// Scene setup
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("white");
 
-// Camera
+// Camera setup (zoomed out, ~20 cubes visible)
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
-
-// Initial camera setup (45° angle)
-const radius = 5;
+const viewDistance = 20; // Increased view distance
 const initialCameraPosition = new THREE.Vector3(
-  radius * Math.sin(Math.PI / 4),
-  radius * Math.sin(Math.PI / 4),
-  radius * Math.cos(Math.PI / 4)
+  viewDistance * Math.sin(Math.PI / 4),
+  viewDistance * Math.sin(Math.PI / 4),
+  viewDistance * Math.cos(Math.PI / 4)
 );
 camera.position.copy(initialCameraPosition);
 const initialTarget = new THREE.Vector3(0, 0, 0);
 
 // Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
@@ -39,37 +37,43 @@ controls.enablePan = true;
 controls.target.copy(initialTarget);
 controls.update();
 
+// Restrict orbit below geometry
+controls.minPolarAngle = 0;                    // Top view
+controls.maxPolarAngle = Math.PI / 2;          // Limit to horizontal
+
 // Lighting
 scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(5, 5, 5);
+directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
-// === SHAPES ===
-// Cube (center)
+// Cube - light grey with transparency
 const cube = new THREE.Mesh(
   new THREE.BoxGeometry(),
-  new THREE.MeshStandardMaterial({ color: 'grey' })
+  new THREE.MeshStandardMaterial({
+    color: 0xd3d3d3,         // light grey
+    transparent: true,
+    opacity: 0.6
+  })
 );
 scene.add(cube);
 
-// Sphere (left)
+// Extra shapes
 const sphere = new THREE.Mesh(
   new THREE.SphereGeometry(0.5, 32, 32),
   new THREE.MeshStandardMaterial({ color: 'skyblue' })
 );
-sphere.position.set(-2, 0, 0);
+sphere.position.set(-3, 0, 0);
 scene.add(sphere);
 
-// Cone (right)
 const cone = new THREE.Mesh(
   new THREE.ConeGeometry(0.5, 1, 32),
   new THREE.MeshStandardMaterial({ color: 'orange' })
 );
-cone.position.set(2, 0, 0);
+cone.position.set(3, 0, 0);
 scene.add(cone);
 
-// === UI STYLES ===
+// Create transparent UI buttons
 function createUIButton(text, onClick, topOffset) {
   const btn = document.createElement('button');
   btn.textContent = text;
@@ -89,25 +93,26 @@ function createUIButton(text, onClick, topOffset) {
   document.body.appendChild(btn);
 }
 
-// === Reset View Button with Animation ===
+// Reset View Button (smooth animation)
 createUIButton('🔄 Reset View', () => {
   gsap.to(camera.position, {
-    duration: 1,
+    duration: 1.2,
     x: initialCameraPosition.x,
     y: initialCameraPosition.y,
     z: initialCameraPosition.z,
-    onUpdate: () => controls.update(),
+    onUpdate: () => controls.update()
   });
+
   gsap.to(controls.target, {
-    duration: 1,
+    duration: 1.2,
     x: initialTarget.x,
     y: initialTarget.y,
     z: initialTarget.z,
-    onUpdate: () => controls.update(),
+    onUpdate: () => controls.update()
   });
 }, '20px');
 
-// === Fullscreen Button ===
+// Fullscreen Toggle Button
 createUIButton('🖥️ Fullscreen', () => {
   if (!document.fullscreenElement) {
     document.body.requestFullscreen().catch(err =>
@@ -118,14 +123,14 @@ createUIButton('🖥️ Fullscreen', () => {
   }
 }, '60px');
 
-// === Resize Handler ===
+// Handle window resizing
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// === Animation Loop ===
+// Animation loop
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
