@@ -1,50 +1,47 @@
-import * as THREE from 'https://unpkg.com/three@0.158.0/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.158.0/examples/jsm/controls/OrbitControls.js';
+// ------------------------------------------------
+// BASIC SETUP
+// ------------------------------------------------
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf0f0f0);
+// Create an empty scene
+var scene = new THREE.Scene();
 
-// Camera
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(2, 2, 5);
+// Create a basic perspective camera
+var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+camera.position.z = 4;
 
-// Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+// Create a renderer with Antialiasing
+var renderer = new THREE.WebGLRenderer({antialias:true});
 
-// Controls
-const controls = new OrbitControls(camera, renderer.domElement);
+// Configure renderer clear color
+renderer.setClearColor("#000000");
 
-// Box
-const geometry = new THREE.BoxGeometry(2, 1, 1);
-const material = new THREE.MeshNormalMaterial({ wireframe: false });
-const box = new THREE.Mesh(geometry, material);
-scene.add(box);
+// Configure renderer size
+renderer.setSize( window.innerWidth, window.innerHeight );
 
-// Text Label
-const loader = new THREE.FontLoader();
-loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
-    const textGeometry = new THREE.TextGeometry('A107', {
-        font: font,
-        size: 0.3,
-        height: 0.05,
-    });
+// Append Renderer to DOM
+document.body.appendChild( renderer.domElement );
 
-    const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const text = new THREE.Mesh(textGeometry, textMaterial);
-    text.position.set(-0.6, 0.6, 0.51); // front face of the box
-    scene.add(text);
-});
+// ------------------------------------------------
+// FUN STARTS HERE
+// ------------------------------------------------
 
-// Lighting
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 10, 7.5);
-scene.add(light);
+// Create a Cube Mesh with basic material
+var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+var material = new THREE.MeshBasicMaterial( { color: "#433F81" } );
+var cube = new THREE.Mesh( geometry, material );
 
-// Render loop
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
-}
-animate();
+// Add cube to Scene
+scene.add( cube );
+
+// Render Loop
+var render = function () {
+  requestAnimationFrame( render );
+
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
+
+  // Render the scene
+  renderer.render(scene, camera);
+};
+
+render();
