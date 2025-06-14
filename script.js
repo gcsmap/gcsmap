@@ -1,46 +1,46 @@
-// ------------------------------------------------
 // BASIC SETUP
-// ------------------------------------------------
-
-// Create an empty scene
 var scene = new THREE.Scene();
-
-// Create a basic perspective camera
-var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 camera.position.z = 4;
 
-// Create a renderer with Antialiasing
 var renderer = new THREE.WebGLRenderer({antialias:true});
-
-// Configure renderer clear color
 renderer.setClearColor("#000000");
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-// Configure renderer size
-renderer.setSize( window.innerWidth, window.innerHeight );
+// Add OrbitControls
+var controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-// Append Renderer to DOM
-document.body.appendChild( renderer.domElement );
+// Create a Cube
+var geometry = new THREE.BoxGeometry(1, 1, 1);
+var material = new THREE.MeshBasicMaterial({ color: "#433F81" });
+var cube = new THREE.Mesh(geometry, material);
+scene.add(cube);
 
-// ------------------------------------------------
-// FUN STARTS HERE
-// ------------------------------------------------
+// Load font and add label
+var loader = new THREE.FontLoader();
+loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+  var textGeometry = new THREE.TextGeometry('A107', {
+    font: font,
+    size: 0.2,
+    height: 0.01
+  });
+  var textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  var textMesh = new THREE.Mesh(textGeometry, textMaterial);
 
-// Create a Cube Mesh with basic material
-var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-var material = new THREE.MeshBasicMaterial( { color: "#433F81" } );
-var cube = new THREE.Mesh( geometry, material );
+  // Position the text slightly in front of the cube's front face
+  textMesh.position.set(-0.3, -0.1, 0.51);
+  cube.add(textMesh); // attach text to cube so it rotates with it
+});
 
-// Add cube to Scene
-scene.add( cube );
-
-// Render Loop
+// RENDER LOOP
 var render = function () {
-  requestAnimationFrame( render );
+  requestAnimationFrame(render);
 
   cube.rotation.x += 0.01;
   cube.rotation.y += 0.01;
 
-  // Render the scene
+  controls.update();
   renderer.render(scene, camera);
 };
 
