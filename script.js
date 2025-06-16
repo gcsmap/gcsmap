@@ -86,20 +86,53 @@ scene.add(rectangle);
 const cubeSize = 2;
 const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 const cubeMaterial = new THREE.MeshStandardMaterial({
-  color: 0xd3d3d3,        // light grey
+  color: 0xd3d3d3,
   transparent: true,
   opacity: 0.6
 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-
-// Center it at (0, 0, 0)
-cube.position.set(0, cubeSize / 2, 0); // y = half height to sit on ground
-
-// No shadow
+cube.position.set(0, cubeSize / 2, 0);
 cube.castShadow = false;
 cube.receiveShadow = false;
-
+cube.userData.coordinate = `1.A.1`;
 scene.add(cube);
+
+// === TOOLTIP FOR COORDINATES ===
+const tooltip = document.createElement('div');
+tooltip.style.position = 'absolute';
+tooltip.style.padding = '6px 12px';
+tooltip.style.background = 'rgba(0,0,0,0.6)';
+tooltip.style.color = 'white';
+tooltip.style.borderRadius = '5px';
+tooltip.style.pointerEvents = 'none';
+tooltip.style.display = 'none';
+tooltip.style.zIndex = '10';
+document.body.appendChild(tooltip);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const cubes = [cube];
+
+function updateTooltip(event) {
+  const x = (event.clientX || event.touches?.[0]?.clientX) / window.innerWidth * 2 - 1;
+  const y = -(event.clientY || event.touches?.[0]?.clientY) / window.innerHeight * 2 + 1;
+  mouse.set(x, y);
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(cubes);
+
+  if (intersects.length > 0) {
+    const intersected = intersects[0].object;
+    tooltip.textContent = intersected.userData.coordinate;
+    tooltip.style.display = 'block';
+    tooltip.style.left = `${(event.clientX || event.touches?.[0]?.clientX) + 10}px`;
+    tooltip.style.top = `${(event.clientY || event.touches?.[0]?.clientY) + 10}px`;
+  } else {
+    tooltip.style.display = 'none';
+  }
+}
+
+window.addEventListener('pointermove', updateTooltip);
+window.addEventListener('touchstart', updateTooltip);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
