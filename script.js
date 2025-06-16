@@ -12,7 +12,7 @@ scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-const initialCameraPosition = new THREE.Vector3(0, 60, 60);
+const initialCameraPosition = new THREE.Vector3(0, 30, 45); // lowered and zoomed in
 camera.position.copy(initialCameraPosition);
 camera.lookAt(0, 0, 20);
 
