@@ -15,7 +15,6 @@ const gridWidth = gridSize * tileSize;
 const aspect = window.innerWidth / window.innerHeight;
 const fov = 75;
 const camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
-
 const fitWidthDistance = (gridWidth / 2) / Math.tan((fov / 2) * Math.PI / 180);
 camera.position.set(0, fitWidthDistance * 0.8, fitWidthDistance);
 camera.lookAt(0, 0, 0);
@@ -44,12 +43,11 @@ dirLight.position.set(10, 20, 10);
 dirLight.castShadow = true;
 scene.add(dirLight);
 
-// === GRID ===
+// === GRID & GROUND ===
 const grid = new THREE.GridHelper(gridSize, gridSize, 0xcccccc, 0xcccccc);
 grid.position.y = 0;
 scene.add(grid);
 
-// === GROUND ===
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(gridSize * 10, gridSize * 10),
   new THREE.ShadowMaterial({ opacity: 0.2 })
@@ -75,7 +73,13 @@ const rectGeometry = new THREE.BufferGeometry().setFromPoints(rectPoints);
 const rectMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 scene.add(new THREE.Line(rectGeometry, rectMaterial));
 
-// === SINGLE CUBE ===
+// === XYZ FLOOR AXES ===
+const origin = new THREE.Vector3(0, 0, 0);
+scene.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, 5, 0x00ff00)); // X - Green
+scene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), origin, 5, 0xff0000)); // Y - Red
+scene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, 5, 0x0000ff)); // Z - Blue
+
+// === CUBE ===
 const cubeSize = 2;
 const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 const cubeMaterial = new THREE.MeshStandardMaterial({
@@ -93,12 +97,14 @@ scene.add(cube);
 // === TOOLTIP ===
 const tooltip = document.createElement('div');
 tooltip.style.position = 'absolute';
-tooltip.style.padding = '6px 12px';
-tooltip.style.background = 'rgba(0,0,0,0.6)';
+tooltip.style.padding = '8px 12px';
+tooltip.style.background = 'rgba(0,0,0,0.7)';
 tooltip.style.color = 'white';
-tooltip.style.borderRadius = '5px';
+tooltip.style.borderRadius = '6px';
 tooltip.style.pointerEvents = 'none';
 tooltip.style.display = 'none';
+tooltip.style.fontFamily = 'monospace';
+tooltip.style.whiteSpace = 'pre-line';
 tooltip.style.zIndex = '10';
 document.body.appendChild(tooltip);
 
@@ -116,7 +122,7 @@ function updateTooltip(event) {
   if (intersects.length > 0) {
     const intersected = intersects[0].object;
     const { x, y, z } = intersected.userData.coordinate;
-    tooltip.textContent = `X:${x}\nY:${y}\nZ:${z}`;
+    tooltip.innerHTML = `<span style="color:#00ff00;">X:</span>${x}\n<span style="color:#ff0000;">Y:</span>${y}\n<span style="color:#0000ff;">Z:</span>${z}`;
     tooltip.style.display = 'block';
     tooltip.style.left = `${(event.clientX || event.touches?.[0]?.clientX) + 10}px`;
     tooltip.style.top = `${(event.clientY || event.touches?.[0]?.clientY) + 10}px`;
@@ -172,24 +178,6 @@ createUIButton('🖥️ Fullscreen', () => {
   }
 }, '60px');
 
-// === AXIS GUIDE (XYZ like Blender) ===
-const axisScene = new THREE.Scene();
-const axisCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
-axisCamera.position.set(0, 0, 5);
-const axisRenderer = new THREE.WebGLRenderer({ alpha: true });
-axisRenderer.setSize(80, 80);
-axisRenderer.domElement.style.position = 'absolute';
-axisRenderer.domElement.style.left = '10px';
-axisRenderer.domElement.style.bottom = '10px';
-axisRenderer.domElement.style.zIndex = '100';
-document.body.appendChild(axisRenderer.domElement);
-
-// Arrows
-const arrowLength = 1;
-axisScene.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), arrowLength, 0xff0000)); // X red
-axisScene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), arrowLength, 0x00ff00)); // Y green
-axisScene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), arrowLength, 0x0000ff)); // Z blue
-
 // === RENDER LOOP ===
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -201,9 +189,5 @@ function animate() {
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
-
-  // Sync axis camera with main camera rotation
-  axisCamera.quaternion.copy(camera.quaternion);
-  axisRenderer.render(axisScene, axisCamera);
 }
 animate();
