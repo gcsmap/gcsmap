@@ -91,14 +91,14 @@ const cubeMaterial = new THREE.MeshStandardMaterial({
   opacity: 0.6
 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-cube.position.set(0, cubeSize / 2, 0);
+cube.position.set(0, cubeSize / 2 + tileSize * 1, 0); // Y = 1
 cube.castShadow = false;
 cube.receiveShadow = false;
 
 // Store raw XYZ values directly
 cube.userData.coordinate = {
   x: 0,
-  y: 0,
+  y: 1,
   z: 0
 };
 
