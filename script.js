@@ -48,29 +48,9 @@ dirLight.castShadow = true;
 scene.add(dirLight);
 
 // === GRID ===
-// Remove default thick axis line by setting centerLineColor to match lineColor
-const grid = new THREE.GridHelper(gridSize, gridSize, 0xcccccc, 0xcccccc);
+const grid = new THREE.GridHelper(gridSize, gridSize, 0xcccccc, 0xcccccc); // no thick center line
 grid.position.y = -0.5;
 scene.add(grid);
-
-// === RECTANGLE OUTLINE (21 × 29) ===
-const rectWidth = 21 * tileSize;
-const rectHeight = 29 * tileSize;
-const halfW = rectWidth / 2;
-const halfH = rectHeight / 2;
-
-const rectPoints = [
-  new THREE.Vector3(-halfW, 0.01, -halfH),
-  new THREE.Vector3(halfW, 0.01, -halfH),
-  new THREE.Vector3(halfW, 0.01, halfH),
-  new THREE.Vector3(-halfW, 0.01, halfH),
-  new THREE.Vector3(-halfW, 0.01, -halfH) // Close the loop
-];
-
-const rectGeometry = new THREE.BufferGeometry().setFromPoints(rectPoints);
-const rectMaterial = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 2 });
-const rectangle = new THREE.Line(rectGeometry, rectMaterial);
-scene.add(rectangle);
 
 // === GROUND ===
 const ground = new THREE.Mesh(
@@ -81,6 +61,25 @@ ground.rotation.x = -Math.PI / 2;
 ground.position.y = -0.5;
 ground.receiveShadow = true;
 scene.add(ground);
+
+// === RECTANGLE OUTLINE (29 × 21) at Top-Right ===
+const rectWidth = 29 * tileSize;
+const rectHeight = 21 * tileSize;
+const offsetX = (gridSize / 2 - 29) * tileSize;
+const offsetZ = -(gridSize / 2 - 21) * tileSize;
+
+const rectPoints = [
+  new THREE.Vector3(offsetX, 0, offsetZ),
+  new THREE.Vector3(offsetX + rectWidth, 0, offsetZ),
+  new THREE.Vector3(offsetX + rectWidth, 0, offsetZ + rectHeight),
+  new THREE.Vector3(offsetX, 0, offsetZ + rectHeight),
+  new THREE.Vector3(offsetX, 0, offsetZ) // Close the loop
+];
+
+const rectGeometry = new THREE.BufferGeometry().setFromPoints(rectPoints);
+const rectMaterial = new THREE.LineBasicMaterial({ color: 0x333333 });
+const rectangle = new THREE.Line(rectGeometry, rectMaterial);
+scene.add(rectangle);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
