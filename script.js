@@ -94,7 +94,14 @@ const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 cube.position.set(0, cubeSize / 2, 0);
 cube.castShadow = false;
 cube.receiveShadow = false;
-cube.userData.coordinate = `1.A.1`;
+
+// Store raw XYZ values directly
+cube.userData.coordinate = {
+  x: 0,
+  y: 0,
+  z: 0
+};
+
 scene.add(cube);
 
 // === TOOLTIP FOR COORDINATES ===
@@ -122,7 +129,8 @@ function updateTooltip(event) {
 
   if (intersects.length > 0) {
     const intersected = intersects[0].object;
-    tooltip.textContent = intersected.userData.coordinate;
+    const { x, y, z } = intersected.userData.coordinate;
+    tooltip.textContent = `X:${x}\nY:${y}\nZ:${z}`;
     tooltip.style.display = 'block';
     tooltip.style.left = `${(event.clientX || event.touches?.[0]?.clientX) + 10}px`;
     tooltip.style.top = `${(event.clientY || event.touches?.[0]?.clientY) + 10}px`;
