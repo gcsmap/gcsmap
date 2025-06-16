@@ -1,6 +1,8 @@
 // Import from CDN
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
+import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/geometries/TextGeometry.js';
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 
 // === SCENE SETUP ===
@@ -57,7 +59,7 @@ ground.position.y = 0;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// === RECTANGLE OUTLINE (29 × 21) at Top-Right ===
+// === RECTANGLE OUTLINE (29x21) ===
 const rectCols = 29;
 const rectRows = 21;
 const startX = (gridSize / 2 - rectCols) * tileSize;
@@ -81,16 +83,11 @@ scene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), origin, 5, 0x0000ff)
 
 // === CUBE ===
 const cubeSize = 2;
-const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
-const cubeMaterial = new THREE.MeshStandardMaterial({
-  color: 0xd3d3d3,
-  transparent: true,
-  opacity: 0.6
-});
-const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+const cube = new THREE.Mesh(
+  new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize),
+  new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 })
+);
 cube.position.set(1 * tileSize, cubeSize / 2, 0);
-cube.castShadow = false;
-cube.receiveShadow = false;
 cube.userData.coordinate = { x: 1, y: 0, z: 0 };
 scene.add(cube);
 
@@ -177,6 +174,27 @@ createUIButton('🖥️ Fullscreen', () => {
     document.exitFullscreen();
   }
 }, '60px');
+
+// === AXIS LABELS ===
+const fontLoader = new FontLoader();
+fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function (font) {
+  const createLabel = (text, color, offset) => {
+    const geometry = new TextGeometry(text, {
+      font: font,
+      size: 0.7,
+      height: 0.1
+    });
+    const material = new THREE.MeshBasicMaterial({ color });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(-8 + offset.x, 0.01, 21 + offset.z);
+    mesh.rotation.x = -Math.PI / 2;
+    scene.add(mesh);
+  };
+
+  createLabel('X', 0x00ff00, { x: 0, z: 0 });
+  createLabel('Y', 0xff0000, { x: 1, z: 0 });
+  createLabel('Z', 0x0000ff, { x: 2, z: 0 });
+});
 
 // === RENDER LOOP ===
 window.addEventListener('resize', () => {
