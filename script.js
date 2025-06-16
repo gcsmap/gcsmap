@@ -12,9 +12,9 @@ scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-const initialCameraPosition = new THREE.Vector3(40, 40, 40);
+const initialCameraPosition = new THREE.Vector3(0, 60, 60);
 camera.position.copy(initialCameraPosition);
-camera.lookAt(0, 0, 0);
+camera.lookAt(0, 0, 20);
 
 // === RENDERER ===
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -25,7 +25,7 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.target.set(20, 0, 20);
+controls.target.set(0, 0, 20);
 controls.update();
 
 // === LIGHTS ===
@@ -79,7 +79,7 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
 // === CUBE ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cubeMaterial);
-cube.position.set(2, 1, 1); // Position at (1,0,0) grid
+cube.position.set(1 + 1, 1, 0 + 1);
 scene.add(cube);
 
 // === TOOLTIP ===
@@ -104,11 +104,7 @@ window.addEventListener('pointermove', (event) => {
   const intersects = raycaster.intersectObject(cube);
   if (intersects.length > 0) {
     const pos = intersects[0].object.position;
-    tooltip.innerHTML = `
-      <span style="color:green">X:</span>${pos.x - 1}<br>
-      <span style="color:red">Y:</span>${pos.y - 1}<br>
-      <span style="color:blue">Z:</span>${pos.z - 1}
-    `;
+    tooltip.innerHTML = `<span style="color:green">X:</span>${pos.x - 1}<br><span style="color:red">Y:</span>${pos.y - 1}<br><span style="color:blue">Z:</span>${pos.z - 1}`;
     tooltip.style.display = 'block';
     tooltip.style.left = `${event.clientX + 10}px`;
     tooltip.style.top = `${event.clientY + 10}px`;
@@ -118,26 +114,23 @@ window.addEventListener('pointermove', (event) => {
 });
 
 // === RESET VIEW BUTTON ===
-function createUIButton(text, onClick, topOffset) {
-  const btn = document.createElement('button');
-  btn.textContent = text;
-  btn.style.position = 'absolute';
-  btn.style.top = topOffset;
-  btn.style.left = '50%';
-  btn.style.transform = 'translateX(-50%)';
-  btn.style.padding = '10px 20px';
-  btn.style.background = 'rgba(0, 0, 0, 0.3)';
-  btn.style.color = 'white';
-  btn.style.border = '1px solid white';
-  btn.style.borderRadius = '8px';
-  btn.style.cursor = 'pointer';
-  btn.style.zIndex = '1';
-  btn.style.backdropFilter = 'blur(5px)';
-  btn.addEventListener('click', onClick);
-  document.body.appendChild(btn);
-}
+const resetButton = document.createElement('button');
+resetButton.textContent = '🔄 Reset View';
+resetButton.style.position = 'absolute';
+resetButton.style.top = '20px';
+resetButton.style.left = '50%';
+resetButton.style.transform = 'translateX(-50%)';
+resetButton.style.padding = '10px 20px';
+resetButton.style.background = 'rgba(0, 0, 0, 0.3)';
+resetButton.style.color = 'white';
+resetButton.style.border = '1px solid white';
+resetButton.style.borderRadius = '8px';
+resetButton.style.cursor = 'pointer';
+resetButton.style.zIndex = '1';
+resetButton.style.backdropFilter = 'blur(5px)';
+document.body.appendChild(resetButton);
 
-createUIButton('🔄 Reset View', () => {
+resetButton.addEventListener('click', () => {
   gsap.to(camera.position, {
     duration: 1.2,
     x: initialCameraPosition.x,
@@ -147,12 +140,12 @@ createUIButton('🔄 Reset View', () => {
   });
   gsap.to(controls.target, {
     duration: 1.2,
-    x: 20,
+    x: 0,
     y: 0,
     z: 20,
     onUpdate: () => controls.update()
   });
-}, '20px');
+});
 
 // === RESIZE ===
 window.addEventListener('resize', () => {
