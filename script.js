@@ -12,7 +12,7 @@ scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(40, 30, 50);
+camera.position.set(40, 30, 50); // lowered and zoomed out
 camera.lookAt(0, 0, 0);
 
 // === RENDERER ===
@@ -27,28 +27,28 @@ controls.dampingFactor = 0.05;
 controls.target.set(20, 0, 20);
 controls.update();
 
-// === LIGHTS ===
+// === LIGHT ===
 scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-// === GRID ===
+// === GRID 40x40 ===
 const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc);
 scene.add(gridHelper);
 
-// === BORDER (29 x 21) at -8,0,-20 ===
+// === BORDER (29 x 21) at -7,0,-20 ===
 const borderMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const borderGeometry = new THREE.BufferGeometry().setFromPoints([
-  new THREE.Vector3(-8, 0.01, -20),
-  new THREE.Vector3(21, 0.01, -20),
-  new THREE.Vector3(21, 0.01, 1),
-  new THREE.Vector3(-8, 0.01, 1),
-  new THREE.Vector3(-8, 0.01, -20),
+  new THREE.Vector3(-7, 0.01, -20),
+  new THREE.Vector3(22, 0.01, -20),
+  new THREE.Vector3(22, 0.01, 1),
+  new THREE.Vector3(-7, 0.01, 1),
+  new THREE.Vector3(-7, 0.01, -20),
 ]);
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
 
 // === AXIS GUIDE ===
 const axisLength = 5;
-const basePos = new THREE.Vector3(-8, 0, -19);
+const basePos = new THREE.Vector3(-8, 0, 21);
 
 const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
 const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000);
@@ -75,10 +75,10 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBE ===
+// === CUBE 2x2x2 at (1,1,0) ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cubeMaterial);
-cube.position.set(2, 1, 1); // Adjust as needed
+cube.position.set(2, 1, 1); // center at (2,1,1) means bottom corner starts at (1,0,0)
 scene.add(cube);
 
 // === TOOLTIP ===
@@ -93,7 +93,7 @@ tooltip.style.display = 'none';
 tooltip.style.zIndex = '1';
 document.body.appendChild(tooltip);
 
-// === RAYCASTING ===
+// === RAYCASTING FOR HOVER ===
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 window.addEventListener('pointermove', (event) => {
@@ -103,7 +103,7 @@ window.addEventListener('pointermove', (event) => {
   const intersects = raycaster.intersectObject(cube);
   if (intersects.length > 0) {
     const pos = intersects[0].object.position;
-    tooltip.innerHTML = `<span style="color:green">X:</span>${pos.x - 1}<br><span style="color:red">Y:</span>${pos.y - 1}<br><span style="color:blue">Z:</span>${pos.z - 1}`;
+    tooltip.innerHTML = `<span style="color:green">X:</span> ${pos.x - 1}<br><span style="color:red">Y:</span> ${pos.y - 1}<br><span style="color:blue">Z:</span> ${pos.z - 1}`;
     tooltip.style.display = 'block';
     tooltip.style.left = `${event.clientX + 10}px`;
     tooltip.style.top = `${event.clientY + 10}px`;
