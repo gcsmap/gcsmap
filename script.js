@@ -12,9 +12,8 @@ scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-const initialCameraPosition = new THREE.Vector3(0, 30, 45); // lowered and zoomed in
-camera.position.copy(initialCameraPosition);
-camera.lookAt(0, 0, 20);
+camera.position.set(40, 30, 50);
+camera.lookAt(0, 0, 0);
 
 // === RENDERER ===
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -25,7 +24,7 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.target.set(0, 0, 20);
+controls.target.set(20, 0, 20);
 controls.update();
 
 // === LIGHTS ===
@@ -35,21 +34,21 @@ scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc);
 scene.add(gridHelper);
 
-// === BORDER (29 x 21) at -9,0,20 ===
+// === BORDER (29 x 21) at -8,0,-20 ===
 const borderMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const borderGeometry = new THREE.BufferGeometry().setFromPoints([
-  new THREE.Vector3(-9, 0.01, 20),
-  new THREE.Vector3(20, 0.01, 20),
-  new THREE.Vector3(20, 0.01, 41),
-  new THREE.Vector3(-9, 0.01, 41),
-  new THREE.Vector3(-9, 0.01, 20),
+  new THREE.Vector3(-8, 0.01, -20),
+  new THREE.Vector3(21, 0.01, -20),
+  new THREE.Vector3(21, 0.01, 1),
+  new THREE.Vector3(-8, 0.01, 1),
+  new THREE.Vector3(-8, 0.01, -20),
 ]);
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
 
 // === AXIS GUIDE ===
 const axisLength = 5;
-const basePos = new THREE.Vector3(-8, 0, 21);
+const basePos = new THREE.Vector3(-8, 0, -19);
 
 const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
 const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000);
@@ -79,7 +78,7 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
 // === CUBE ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cubeMaterial);
-cube.position.set(1 + 1, 1, 0 + 1);
+cube.position.set(2, 1, 1); // Adjust as needed
 scene.add(cube);
 
 // === TOOLTIP ===
@@ -133,14 +132,14 @@ document.body.appendChild(resetButton);
 resetButton.addEventListener('click', () => {
   gsap.to(camera.position, {
     duration: 1.2,
-    x: initialCameraPosition.x,
-    y: initialCameraPosition.y,
-    z: initialCameraPosition.z,
+    x: 40,
+    y: 30,
+    z: 50,
     onUpdate: () => controls.update()
   });
   gsap.to(controls.target, {
     duration: 1.2,
-    x: 0,
+    x: 20,
     y: 0,
     z: 20,
     onUpdate: () => controls.update()
