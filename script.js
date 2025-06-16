@@ -34,14 +34,14 @@ scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc);
 scene.add(gridHelper);
 
-// === BORDER (29 x 21) ===
+// === BORDER (29 x 21) at -8,0,0 ===
 const borderMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const borderGeometry = new THREE.BufferGeometry().setFromPoints([
-  new THREE.Vector3(11, 0.01, -8),
-  new THREE.Vector3(40, 0.01, -8),
-  new THREE.Vector3(40, 0.01, 13),
-  new THREE.Vector3(11, 0.01, 13),
-  new THREE.Vector3(11, 0.01, -8),
+  new THREE.Vector3(-8, 0.01, 0),
+  new THREE.Vector3(21, 0.01, 0),
+  new THREE.Vector3(21, 0.01, 21),
+  new THREE.Vector3(-8, 0.01, 21),
+  new THREE.Vector3(-8, 0.01, 0),
 ]);
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
