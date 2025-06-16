@@ -34,14 +34,14 @@ scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc);
 scene.add(gridHelper);
 
-// === BORDER (29 x 21) at -7,0,-20 ===
+// === BORDER (29 x 21) at -9,0,-20 ===
 const borderMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const borderGeometry = new THREE.BufferGeometry().setFromPoints([
-  new THREE.Vector3(-7, 0.01, -20),
-  new THREE.Vector3(22, 0.01, -20),
-  new THREE.Vector3(22, 0.01, 1),
-  new THREE.Vector3(-7, 0.01, 1),
-  new THREE.Vector3(-7, 0.01, -20),
+  new THREE.Vector3(-9, 0.01, -20),
+  new THREE.Vector3(20, 0.01, -20),
+  new THREE.Vector3(20, 0.01, 1),
+  new THREE.Vector3(-9, 0.01, 1),
+  new THREE.Vector3(-9, 0.01, -20),
 ]);
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
@@ -75,10 +75,10 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBE 2x2x2 at (1,1,0) ===
+// === CUBE 2x2x2 at (2,1,1) ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cubeMaterial);
-cube.position.set(2, 1, 1); // center at (2,1,1) means bottom corner starts at (1,0,0)
+cube.position.set(2, 1, 1);
 scene.add(cube);
 
 // === TOOLTIP ===
