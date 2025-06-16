@@ -17,9 +17,9 @@ const aspect = window.innerWidth / window.innerHeight;
 const fov = 75;
 const camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
 
-// Compute distance so full grid fits horizontally
+// Fit camera to full grid width
 const fitWidthDistance = (gridWidth / 2) / Math.tan((fov / 2) * Math.PI / 180);
-camera.position.set(0, fitWidthDistance * 0.8, fitWidthDistance);  // slightly angled
+camera.position.set(0, fitWidthDistance * 0.8, fitWidthDistance);
 camera.lookAt(0, 0, 0);
 
 const initialCameraPosition = camera.position.clone();
@@ -47,11 +47,32 @@ dirLight.position.set(10, 20, 10);
 dirLight.castShadow = true;
 scene.add(dirLight);
 
-// === GRID & GROUND ===
-const grid = new THREE.GridHelper(gridSize, gridSize, 0x999999, 0xcccccc);
+// === GRID ===
+// Remove default thick axis line by setting centerLineColor to match lineColor
+const grid = new THREE.GridHelper(gridSize, gridSize, 0xcccccc, 0xcccccc);
 grid.position.y = -0.5;
 scene.add(grid);
 
+// === RECTANGLE OUTLINE (21 × 29) ===
+const rectWidth = 21 * tileSize;
+const rectHeight = 29 * tileSize;
+const halfW = rectWidth / 2;
+const halfH = rectHeight / 2;
+
+const rectPoints = [
+  new THREE.Vector3(-halfW, 0.01, -halfH),
+  new THREE.Vector3(halfW, 0.01, -halfH),
+  new THREE.Vector3(halfW, 0.01, halfH),
+  new THREE.Vector3(-halfW, 0.01, halfH),
+  new THREE.Vector3(-halfW, 0.01, -halfH) // Close the loop
+];
+
+const rectGeometry = new THREE.BufferGeometry().setFromPoints(rectPoints);
+const rectMaterial = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 2 });
+const rectangle = new THREE.Line(rectGeometry, rectMaterial);
+scene.add(rectangle);
+
+// === GROUND ===
 const ground = new THREE.Mesh(
   new THREE.PlaneGeometry(gridSize * 10, gridSize * 10),
   new THREE.ShadowMaterial({ opacity: 0.2 })
