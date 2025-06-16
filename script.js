@@ -10,9 +10,9 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6f0ff);
 scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 
-// === CAMERA ===
+// === CAMERA (Front View) ===
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(40, 30, 50); // lowered and zoomed out
+camera.position.set(0, 10, 80); // front view, centered on Z
 camera.lookAt(0, 0, 0);
 
 // === RENDERER ===
@@ -24,10 +24,10 @@ document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.target.set(20, 0, 20);
+controls.target.set(0, 0, 0);
 controls.update();
 
-// === LIGHT ===
+// === LIGHTS ===
 scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
 // === GRID 40x40 ===
@@ -75,7 +75,7 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBE 2x2x2 at (2,1,1) ===
+// === CUBE ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cubeMaterial);
 cube.position.set(2, 1, 1);
@@ -93,7 +93,7 @@ tooltip.style.display = 'none';
 tooltip.style.zIndex = '1';
 document.body.appendChild(tooltip);
 
-// === RAYCASTING FOR HOVER ===
+// === RAYCASTING ===
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 window.addEventListener('pointermove', (event) => {
@@ -132,16 +132,16 @@ document.body.appendChild(resetButton);
 resetButton.addEventListener('click', () => {
   gsap.to(camera.position, {
     duration: 1.2,
-    x: 40,
-    y: 30,
-    z: 50,
+    x: 0,
+    y: 10,
+    z: 80,
     onUpdate: () => controls.update()
   });
   gsap.to(controls.target, {
     duration: 1.2,
-    x: 20,
+    x: 0,
     y: 0,
-    z: 20,
+    z: 0,
     onUpdate: () => controls.update()
   });
 });
