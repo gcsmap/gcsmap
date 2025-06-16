@@ -12,16 +12,13 @@ scene.fog = new THREE.Fog(0xe6f0ff, 30, 200);
 const tileSize = 1;
 const gridSize = 40;
 const gridWidth = gridSize * tileSize;
-
 const aspect = window.innerWidth / window.innerHeight;
 const fov = 75;
 const camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
 
-// Fit camera to full grid width
 const fitWidthDistance = (gridWidth / 2) / Math.tan((fov / 2) * Math.PI / 180);
 camera.position.set(0, fitWidthDistance * 0.8, fitWidthDistance);
 camera.lookAt(0, 0, 0);
-
 const initialCameraPosition = camera.position.clone();
 const initialTarget = new THREE.Vector3(0, 0, 0);
 
@@ -65,10 +62,8 @@ scene.add(ground);
 // === RECTANGLE OUTLINE (29 × 21) at Top-Right ===
 const rectCols = 29;
 const rectRows = 21;
-
 const startX = (gridSize / 2 - rectCols) * tileSize;
 const startZ = -(gridSize / 2) * tileSize;
-
 const rectPoints = [
   new THREE.Vector3(startX, 0.001, startZ),
   new THREE.Vector3(startX + rectCols, 0.001, startZ),
@@ -76,13 +71,11 @@ const rectPoints = [
   new THREE.Vector3(startX, 0.001, startZ + rectRows),
   new THREE.Vector3(startX, 0.001, startZ)
 ];
-
 const rectGeometry = new THREE.BufferGeometry().setFromPoints(rectPoints);
 const rectMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-const rectangle = new THREE.Line(rectGeometry, rectMaterial);
-scene.add(rectangle);
+scene.add(new THREE.Line(rectGeometry, rectMaterial));
 
-// === SINGLE CUBE (at 1,0,0) ===
+// === SINGLE CUBE ===
 const cubeSize = 2;
 const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 const cubeMaterial = new THREE.MeshStandardMaterial({
@@ -91,15 +84,13 @@ const cubeMaterial = new THREE.MeshStandardMaterial({
   opacity: 0.6
 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-
-// Position cube at (1,0,0) — make sure it sits on ground
 cube.position.set(1 * tileSize, cubeSize / 2, 0);
 cube.castShadow = false;
 cube.receiveShadow = false;
 cube.userData.coordinate = { x: 1, y: 0, z: 0 };
 scene.add(cube);
 
-// === TOOLTIP FOR COORDINATES ===
+// === TOOLTIP ===
 const tooltip = document.createElement('div');
 tooltip.style.position = 'absolute';
 tooltip.style.padding = '6px 12px';
@@ -133,7 +124,6 @@ function updateTooltip(event) {
     tooltip.style.display = 'none';
   }
 }
-
 window.addEventListener('pointermove', updateTooltip);
 window.addEventListener('touchstart', updateTooltip);
 
@@ -157,7 +147,6 @@ function createUIButton(text, onClick, topOffset) {
   document.body.appendChild(btn);
 }
 
-// Reset View Button
 createUIButton('🔄 Reset View', () => {
   gsap.to(camera.position, {
     duration: 1.2,
@@ -175,16 +164,31 @@ createUIButton('🔄 Reset View', () => {
   });
 }, '20px');
 
-// Fullscreen Toggle
 createUIButton('🖥️ Fullscreen', () => {
   if (!document.fullscreenElement) {
-    document.body.requestFullscreen().catch(err =>
-      alert(`Error: ${err.message}`)
-    );
+    document.body.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
   } else {
     document.exitFullscreen();
   }
 }, '60px');
+
+// === AXIS GUIDE (XYZ like Blender) ===
+const axisScene = new THREE.Scene();
+const axisCamera = new THREE.PerspectiveCamera(50, 1, 0.1, 10);
+axisCamera.position.set(0, 0, 5);
+const axisRenderer = new THREE.WebGLRenderer({ alpha: true });
+axisRenderer.setSize(80, 80);
+axisRenderer.domElement.style.position = 'absolute';
+axisRenderer.domElement.style.left = '10px';
+axisRenderer.domElement.style.bottom = '10px';
+axisRenderer.domElement.style.zIndex = '100';
+document.body.appendChild(axisRenderer.domElement);
+
+// Arrows
+const arrowLength = 1;
+axisScene.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), arrowLength, 0xff0000)); // X red
+axisScene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), arrowLength, 0x00ff00)); // Y green
+axisScene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), arrowLength, 0x0000ff)); // Z blue
 
 // === RENDER LOOP ===
 window.addEventListener('resize', () => {
@@ -197,5 +201,9 @@ function animate() {
   requestAnimationFrame(animate);
   controls.update();
   renderer.render(scene, camera);
+
+  // Sync axis camera with main camera rotation
+  axisCamera.quaternion.copy(camera.quaternion);
+  axisRenderer.render(axisScene, axisCamera);
 }
 animate();
