@@ -6,17 +6,23 @@ import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 // === SCENE SETUP ===
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6f0ff);
-scene.fog = new THREE.Fog(0xe6f0ff, 30, 150);
+scene.fog = new THREE.Fog(0xe6f0ff, 30, 200);
 
 // === CAMERA ===
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const viewDistance = 60;
-const initialCameraPosition = new THREE.Vector3(
-  viewDistance * Math.sin(Math.PI / 4),
-  viewDistance * Math.sin(Math.PI / 4),
-  viewDistance * Math.cos(Math.PI / 4)
-);
-camera.position.copy(initialCameraPosition);
+const tileSize = 1;
+const gridSize = 40;
+const gridWidth = gridSize * tileSize;
+
+const aspect = window.innerWidth / window.innerHeight;
+const fov = 75;
+const camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
+
+// Compute distance so full grid fits horizontally
+const fitWidthDistance = (gridWidth / 2) / Math.tan((fov / 2) * Math.PI / 180);
+camera.position.set(0, fitWidthDistance * 0.8, fitWidthDistance);  // slightly angled
+camera.lookAt(0, 0, 0);
+
+const initialCameraPosition = camera.position.clone();
 const initialTarget = new THREE.Vector3(0, 0, 0);
 
 // === RENDERER ===
@@ -42,9 +48,6 @@ dirLight.castShadow = true;
 scene.add(dirLight);
 
 // === GRID & GROUND ===
-const tileSize = 1;
-const gridSize = 40;
-
 const grid = new THREE.GridHelper(gridSize, gridSize, 0x999999, 0xcccccc);
 grid.position.y = -0.5;
 scene.add(grid);
