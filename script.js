@@ -48,9 +48,11 @@ scene.add(borderLine);
 
 // === AXIS GUIDE ===
 const axisLength = 5;
-const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-8, 0, 21), axisLength, 0x00ff00);
-const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-8, 0, 21), axisLength, 0xff0000);
-const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-8, 0, 21), axisLength, 0x0000ff);
+const basePos = new THREE.Vector3(-8, 0, 21);
+
+const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
+const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000);
+const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), basePos, axisLength, 0x0000ff);
 scene.add(arrowX, arrowY, arrowZ);
 
 // === AXIS LABELS ===
@@ -68,9 +70,9 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
     scene.add(mesh);
   };
 
-  createLabel('X', 0x00ff00, new THREE.Vector3(-8 + axisLength + 0.5, 0, 21));
-  createLabel('Y', 0xff0000, new THREE.Vector3(-8, axisLength + 0.5, 21));
-  createLabel('Z', 0x0000ff, new THREE.Vector3(-8, 0, 21 + axisLength + 0.5));
+  createLabel('X', 0x00ff00, basePos.clone().add(new THREE.Vector3(axisLength + 0.5, 0, 0)));
+  createLabel('Y', 0xff0000, basePos.clone().add(new THREE.Vector3(0, axisLength + 0.5, 0)));
+  createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
 // === CUBE ===
