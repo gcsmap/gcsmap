@@ -6,11 +6,11 @@ import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 // === SCENE SETUP ===
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6f0ff);
-scene.fog = new THREE.Fog(0xe6f0ff, 30, 100);
+scene.fog = new THREE.Fog(0xe6f0ff, 30, 150);
 
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const viewDistance = 20;
+const viewDistance = 60;
 const initialCameraPosition = new THREE.Vector3(
   viewDistance * Math.sin(Math.PI / 4),
   viewDistance * Math.sin(Math.PI / 4),
@@ -43,14 +43,14 @@ scene.add(dirLight);
 
 // === GRID & GROUND ===
 const tileSize = 1;
-const gridSize = 10;
+const gridSize = 40;
 
 const grid = new THREE.GridHelper(gridSize, gridSize, 0x999999, 0xcccccc);
 grid.position.y = -0.5;
 scene.add(grid);
 
 const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(100, 100),
+  new THREE.PlaneGeometry(gridSize * 10, gridSize * 10),
   new THREE.ShadowMaterial({ opacity: 0.2 })
 );
 ground.rotation.x = -Math.PI / 2;
