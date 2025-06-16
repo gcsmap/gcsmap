@@ -82,7 +82,7 @@ const rectMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const rectangle = new THREE.Line(rectGeometry, rectMaterial);
 scene.add(rectangle);
 
-// === SINGLE CUBE ===
+// === SINGLE CUBE (at 1,0,0) ===
 const cubeSize = 2;
 const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 const cubeMaterial = new THREE.MeshStandardMaterial({
@@ -91,17 +91,12 @@ const cubeMaterial = new THREE.MeshStandardMaterial({
   opacity: 0.6
 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-cube.position.set(0, cubeSize / 2 + tileSize * 1, 0); // Y = 1
+
+// Position cube at (1,0,0) — make sure it sits on ground
+cube.position.set(1 * tileSize, cubeSize / 2, 0);
 cube.castShadow = false;
 cube.receiveShadow = false;
-
-// Store raw XYZ values directly
-cube.userData.coordinate = {
-  x: 0,
-  y: 1,
-  z: 0
-};
-
+cube.userData.coordinate = { x: 1, y: 0, z: 0 };
 scene.add(cube);
 
 // === TOOLTIP FOR COORDINATES ===
