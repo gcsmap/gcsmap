@@ -48,8 +48,8 @@ dirLight.castShadow = true;
 scene.add(dirLight);
 
 // === GRID ===
-const grid = new THREE.GridHelper(gridSize, gridSize, 0xcccccc, 0xcccccc); // no thick center line
-grid.position.y = -0.5;
+const grid = new THREE.GridHelper(gridSize, gridSize, 0xcccccc, 0xcccccc);
+grid.position.y = 0;
 scene.add(grid);
 
 // === GROUND ===
@@ -58,26 +58,27 @@ const ground = new THREE.Mesh(
   new THREE.ShadowMaterial({ opacity: 0.2 })
 );
 ground.rotation.x = -Math.PI / 2;
-ground.position.y = -0.5;
+ground.position.y = 0;
 ground.receiveShadow = true;
 scene.add(ground);
 
 // === RECTANGLE OUTLINE (29 × 21) at Top-Right ===
-const rectWidth = 29 * tileSize;
-const rectHeight = 21 * tileSize;
-const offsetX = (gridSize / 2 - 29) * tileSize;
-const offsetZ = -(gridSize / 2 - 21) * tileSize;
+const rectCols = 29;
+const rectRows = 21;
+
+const startX = (gridSize / 2 - rectCols) * tileSize;      // right edge inward
+const startZ = -(gridSize / 2) * tileSize;                // top edge (negative Z)
 
 const rectPoints = [
-  new THREE.Vector3(offsetX, 0, offsetZ),
-  new THREE.Vector3(offsetX + rectWidth, 0, offsetZ),
-  new THREE.Vector3(offsetX + rectWidth, 0, offsetZ + rectHeight),
-  new THREE.Vector3(offsetX, 0, offsetZ + rectHeight),
-  new THREE.Vector3(offsetX, 0, offsetZ) // Close the loop
+  new THREE.Vector3(startX, 0.001, startZ),
+  new THREE.Vector3(startX + rectCols, 0.001, startZ),
+  new THREE.Vector3(startX + rectCols, 0.001, startZ + rectRows),
+  new THREE.Vector3(startX, 0.001, startZ + rectRows),
+  new THREE.Vector3(startX, 0.001, startZ) // Close loop
 ];
 
 const rectGeometry = new THREE.BufferGeometry().setFromPoints(rectPoints);
-const rectMaterial = new THREE.LineBasicMaterial({ color: 0x333333 });
+const rectMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
 const rectangle = new THREE.Line(rectGeometry, rectMaterial);
 scene.add(rectangle);
 
