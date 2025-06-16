@@ -66,21 +66,40 @@ scene.add(ground);
 const rectCols = 29;
 const rectRows = 21;
 
-const startX = (gridSize / 2 - rectCols) * tileSize;      // right edge inward
-const startZ = -(gridSize / 2) * tileSize;                // top edge (negative Z)
+const startX = (gridSize / 2 - rectCols) * tileSize;
+const startZ = -(gridSize / 2) * tileSize;
 
 const rectPoints = [
   new THREE.Vector3(startX, 0.001, startZ),
   new THREE.Vector3(startX + rectCols, 0.001, startZ),
   new THREE.Vector3(startX + rectCols, 0.001, startZ + rectRows),
   new THREE.Vector3(startX, 0.001, startZ + rectRows),
-  new THREE.Vector3(startX, 0.001, startZ) // Close loop
+  new THREE.Vector3(startX, 0.001, startZ)
 ];
 
 const rectGeometry = new THREE.BufferGeometry().setFromPoints(rectPoints);
-const rectMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 });
+const rectMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const rectangle = new THREE.Line(rectGeometry, rectMaterial);
 scene.add(rectangle);
+
+// === SINGLE CUBE ===
+const cubeSize = 2;
+const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+const cubeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xd3d3d3,        // light grey
+  transparent: true,
+  opacity: 0.6
+});
+const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+
+// Center it at (0, 0, 0)
+cube.position.set(0, cubeSize / 2, 0); // y = half height to sit on ground
+
+// No shadow
+cube.castShadow = false;
+cube.receiveShadow = false;
+
+scene.add(cube);
 
 // === UI BUTTONS ===
 function createUIButton(text, onClick, topOffset) {
