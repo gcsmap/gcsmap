@@ -10,9 +10,15 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6f0ff);
 scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 
-// === CAMERA (Front View) ===
+// === CAMERA ===
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 10, 80); // front view, centered on Z
+const radius = 70;
+const angleRad = THREE.MathUtils.degToRad(60); // 60 degree elevation
+camera.position.set(
+  0,
+  Math.sin(angleRad) * radius,
+  Math.cos(angleRad) * radius
+);
 camera.lookAt(0, 0, 0);
 
 // === RENDERER ===
@@ -25,6 +31,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.target.set(0, 0, 0);
+controls.maxPolarAngle = Math.PI / 2; // forbid camera from going below plane
 controls.update();
 
 // === LIGHTS ===
@@ -133,8 +140,8 @@ resetButton.addEventListener('click', () => {
   gsap.to(camera.position, {
     duration: 1.2,
     x: 0,
-    y: 10,
-    z: 80,
+    y: Math.sin(angleRad) * radius,
+    z: Math.cos(angleRad) * radius,
     onUpdate: () => controls.update()
   });
   gsap.to(controls.target, {
