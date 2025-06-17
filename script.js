@@ -77,7 +77,7 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBES at specified coordinates ===
+// === CUBES with white edges ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
 const zValues = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2];
@@ -86,37 +86,11 @@ zValues.forEach(z => {
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
   cube.position.set(-8, 1, z);
   scene.add(cube);
-});
 
-// === TOOLTIP ===
-const tooltip = document.createElement('div');
-tooltip.style.position = 'absolute';
-tooltip.style.padding = '6px 12px';
-tooltip.style.background = 'rgba(0,0,0,0.6)';
-tooltip.style.color = 'white';
-tooltip.style.borderRadius = '5px';
-tooltip.style.pointerEvents = 'none';
-tooltip.style.display = 'none';
-tooltip.style.zIndex = '1';
-document.body.appendChild(tooltip);
-
-// === RAYCASTING ===
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-window.addEventListener('pointermove', (event) => {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(scene.children.filter(obj => obj.isMesh && obj.geometry.type === 'BoxGeometry'));
-  if (intersects.length > 0) {
-    const pos = intersects[0].object.position;
-    tooltip.innerHTML = `<span style="color:green">X:</span> ${pos.x - 1}<br><span style="color:red">Y:</span> ${pos.y - 1}<br><span style="color:blue">Z:</span> ${pos.z - 1}`;
-    tooltip.style.display = 'block';
-    tooltip.style.left = `${event.clientX + 10}px`;
-    tooltip.style.top = `${event.clientY + 10}px`;
-  } else {
-    tooltip.style.display = 'none';
-  }
+  const edges = new THREE.EdgesGeometry(cubeGeometry);
+  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.3, transparent: true }));
+  line.position.copy(cube.position);
+  scene.add(line);
 });
 
 // === RESET VIEW BUTTON ===
