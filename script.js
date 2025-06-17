@@ -128,18 +128,18 @@ const glowMaterial = new THREE.MeshBasicMaterial({
   opacity: 0.15
 });
 
-// Fixed positions with gap
+// Fixed positions 
 const cubePositions = [
   { x: -8, y: 1, z: -20 },
-  { x: -8, y: 1, z: -17.9 },
-  { x: -8, y: 1, z: -15.8 },
-  { x: -8, y: 1, z: -13.7 },
-  { x: -8, y: 1, z: -11.6 },
-  { x: -8, y: 1, z: -9.5 },
-  { x: -8, y: 1, z: -7.4 },
-  { x: -8, y: 1, z: -5.3 },
-  { x: -8, y: 1, z: -3.2 },
-  { x: -8, y: 1, z: -1.1 }
+  { x: -8, y: 1, z: -17 },
+  { x: -8, y: 1, z: -15 },
+  { x: -8, y: 1, z: -13 },
+  { x: -8, y: 1, z: -11 },
+  { x: -8, y: 1, z: -9 },
+  { x: -8, y: 1, z: -7 },
+  { x: -8, y: 1, z: -5 },
+  { x: -8, y: 1, z: -3 },
+  { x: -8, y: 1, z: -1 }
 ];
 
 cubePositions.forEach(pos => {
