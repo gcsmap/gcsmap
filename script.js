@@ -13,12 +13,8 @@ scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 // === CAMERA ===
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 const radius = 70;
-const angleRad = THREE.MathUtils.degToRad(60); // 60 degree elevation
-camera.position.set(
-  0,
-  Math.sin(angleRad) * radius,
-  Math.cos(angleRad) * radius
-);
+const angleRad = THREE.MathUtils.degToRad(60);
+camera.position.set(0, Math.sin(angleRad) * radius, Math.cos(angleRad) * radius);
 camera.lookAt(0, 0, 0);
 
 // === RENDERER ===
@@ -31,13 +27,13 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.target.set(0, 0, 0);
-controls.maxPolarAngle = Math.PI / 2; // forbid camera from going below plane
+controls.maxPolarAngle = Math.PI / 2;
 controls.update();
 
 // === LIGHTS ===
 scene.add(new THREE.AmbientLight(0xffffff, 0.8));
 
-// === GRID 40x40 ===
+// === GRID ===
 const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc);
 scene.add(gridHelper);
 
@@ -53,9 +49,9 @@ const borderGeometry = new THREE.BufferGeometry().setFromPoints([
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
 
-// === AXIS GUIDE ===
+// === AXIS GUIDE at (-21, 0, -21) ===
 const axisLength = 5;
-const basePos = new THREE.Vector3(-8, 0, 21);
+const basePos = new THREE.Vector3(-21, 0, -21);
 
 const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
 const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000);
