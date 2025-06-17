@@ -20,6 +20,7 @@ camera.lookAt(0, 0, 0);
 // === RENDERER ===
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
 // === CONTROLS ===
@@ -31,13 +32,27 @@ controls.maxPolarAngle = Math.PI / 2;
 controls.update();
 
 // === LIGHTS ===
-scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+dirLight.position.set(10, 20, 10);
+dirLight.castShadow = true;
+scene.add(dirLight);
+
+// === PLANE (GROUND) ===
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.ShadowMaterial({ opacity: 0.1 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = 0;
+ground.receiveShadow = true;
+scene.add(ground);
 
 // === GRID ===
 const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc);
 scene.add(gridHelper);
 
-// === BORDER (29 x 21) at -9,0,-20 ===
+// === BORDER (29 x 21) ===
 const borderMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const borderGeometry = new THREE.BufferGeometry().setFromPoints([
   new THREE.Vector3(-9, 0.01, -20),
@@ -49,7 +64,7 @@ const borderGeometry = new THREE.BufferGeometry().setFromPoints([
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
 
-// === AXIS GUIDE at (-20, 0, -20) ===
+// === AXIS GUIDE ===
 const axisLength = 5;
 const basePos = new THREE.Vector3(-20, 0, -20);
 const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
@@ -77,21 +92,30 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBES with white edges (thicker lines) ===
-const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
+// === CUBES ===
+const cubeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xd3d3d3,
+  metalness: 0.2,
+  roughness: 0.5,
+  transparent: true,
+  opacity: 0.8,
+});
 const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
 const zValues = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2];
 
 zValues.forEach(z => {
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
   cube.position.set(-8, 1, z);
+  cube.castShadow = true;
+  cube.receiveShadow = true;
   scene.add(cube);
 
-  const edges = new THREE.EdgesGeometry(cubeGeometry);
-  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 3, transparent: true, opacity: 0.5 });
-  const line = new THREE.LineSegments(edges, lineMaterial);
-  line.position.copy(cube.position);
-  scene.add(line);
+  // Simulated thick outline using a slightly larger, transparent white box
+  const outlineGeo = new THREE.BoxGeometry(2.05, 2.05, 2.05);
+  const outlineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+  const outline = new THREE.Mesh(outlineGeo, outlineMat);
+  outline.position.copy(cube.position);
+  scene.add(outline);
 });
 
 // === RESET VIEW BUTTON ===
