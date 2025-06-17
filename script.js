@@ -49,9 +49,9 @@ const borderGeometry = new THREE.BufferGeometry().setFromPoints([
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
 
-// === AXIS GUIDE at (-21, 0, -21) ===
+// === AXIS GUIDE at TOP LEFT = (-20, 0, 20) ===
 const axisLength = 5;
-const basePos = new THREE.Vector3(-21, 0, -21);
+const basePos = new THREE.Vector3(-20, 0, 20);
 
 const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
 const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000);
