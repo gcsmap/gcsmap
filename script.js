@@ -77,14 +77,14 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBES at specific Z coordinates ===
+// === CUBES at specified coordinates ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
-const zValues = [20, 18, 16, 14, 12, 10, 8, 6, 4, 2];
+const zValues = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2];
 
 zValues.forEach(z => {
   const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-  cube.position.set(-9, 1, z);
+  cube.position.set(-8, 1, z);
   scene.add(cube);
 });
 
