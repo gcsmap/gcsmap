@@ -1,4 +1,4 @@
-// Import from CDN
+// Import necessary modules
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/controls/OrbitControls.js';
 import { FontLoader } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/loaders/FontLoader.js';
@@ -8,107 +8,138 @@ import { LineMaterial } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/example
 import { LineGeometry } from 'https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/lines/LineGeometry.js';
 import { gsap } from 'https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js';
 
-// --- Scene Setup ---
+// Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xe6f0ff);
 scene.fog = new THREE.Fog(0xe6f0ff, 50, 150);
 
-// --- Camera ---
+// Camera
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 const radius = 70;
 const angleRad = THREE.MathUtils.degToRad(60);
 camera.position.set(0, Math.sin(angleRad) * radius, Math.cos(angleRad) * radius);
 camera.lookAt(0, 0, 0);
 
-// --- Renderer ---
+// Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-// --- Controls ---
+// Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.target.set(0, 0, 0);
 controls.maxPolarAngle = Math.PI / 2;
+controls.target.set(0, 0, 0);
 controls.update();
 
-// --- Light & Grid ---
+// Lights
 scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+
+// Grid floor
 scene.add(new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc));
 
-// --- Border ---
-const borderMat = new THREE.LineBasicMaterial({ color: 0x000000 });
-const borderGeo = new THREE.BufferGeometry().setFromPoints([
+// Border (29x21) at (-9, 0, -20)
+const borderPoints = [
   [-9, 0.01, -20], [20, 0.01, -20],
   [20, 0.01, 1], [-9, 0.01, 1],
   [-9, 0.01, -20]
-].map(p => new THREE.Vector3(...p)));
+].map(p => new THREE.Vector3(...p));
+const borderGeo = new THREE.BufferGeometry().setFromPoints(borderPoints);
+const borderMat = new THREE.LineBasicMaterial({ color: 0x000000 });
 scene.add(new THREE.Line(borderGeo, borderMat));
 
-// --- Axis Guide ---
+// Axis Guide at (-20, 0, -20)
 const axisBase = new THREE.Vector3(-20, 0, -20);
 scene.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), axisBase, 5, 0x00ff00));
 scene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), axisBase, 5, 0xff0000));
 scene.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), axisBase, 5, 0x0000ff));
 
+// Axis Labels
 new FontLoader().load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', font => {
-  const mk = (t, c, pos) => {
-    const mesh = new THREE.Mesh(new TextGeometry(t, { font, size: 0.8, height: 0.1 }),
-                                new THREE.MeshBasicMaterial({ color: c }));
-    mesh.position.copy(pos); scene.add(mesh);
+  const makeLabel = (text, color, offset) => {
+    const geometry = new TextGeometry(text, {
+      font,
+      size: 0.8,
+      height: 0.1,
+    });
+    const material = new THREE.MeshBasicMaterial({ color });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.copy(axisBase.clone().add(offset));
+    scene.add(mesh);
   };
-  mk('X', 0x00ff00, axisBase.clone().add(new THREE.Vector3(5.5, 0, 0)));
-  mk('Y', 0xff0000, axisBase.clone().add(new THREE.Vector3(0, 5.5, 0)));
-  mk('Z', 0x0000ff, axisBase.clone().add(new THREE.Vector3(0, 0, 5.5)));
+  makeLabel('X', 0x00ff00, new THREE.Vector3(6, 0, 0));
+  makeLabel('Y', 0xff0000, new THREE.Vector3(0, 6, 0));
+  makeLabel('Z', 0x0000ff, new THREE.Vector3(0, 0, 6));
 });
 
-// --- Cubes with FatLine Edges ---
-const cubeGeom = new THREE.BoxGeometry(2, 2, 2);
-const cubeMat = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
-const zVals = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2];
+// Cube Data (20 total)
+const cubePositions = [
+  [-9, 0, 20], [-9, 0, 18], [-9, 0, 16], [-9, 0, 14], [-9, 0, 12],
+  [-9, 0, 10], [-9, 0, 8], [-9, 0, 6], [-9, 0, 4], [-9, 0, 2],
+  [-8, 0, -20], [-8, 0, -18], [-8, 0, -16], [-8, 0, -14], [-8, 0, -12],
+  [-8, 0, -10], [-8, 0, -8], [-8, 0, -6], [-8, 0, -4], [-8, 0, -2]
+];
 
-zVals.forEach(z => {
-  const cube = new THREE.Mesh(cubeGeom, cubeMat);
-  cube.position.set(-8, 1, z);
+// Cube settings
+const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+const cubeMaterial = new THREE.MeshStandardMaterial({
+  color: 0xd3d3d3,
+  transparent: true,
+  opacity: 0.6,
+});
+
+// FatLine for edges
+cubePositions.forEach(([x, y, z]) => {
+  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  cube.position.set(x, 1, z);
   scene.add(cube);
 
-  const edgePts = new THREE.EdgesGeometry(cubeGeom).attributes.position.array;
-  const coords = Array.from(edgePts);
-  const lgeo = new LineGeometry();
-  lgeo.setPositions(coords);
+  const edges = new THREE.EdgesGeometry(cubeGeometry);
+  const edgePositions = edges.attributes.position.array;
 
-  const lmat = new LineMaterial({
+  const lineGeometry = new LineGeometry();
+  lineGeometry.setPositions(edgePositions);
+
+  const lineMaterial = new LineMaterial({
     color: 0xffffff,
-    linewidth: 0.01, // high DPI, so small world units
+    linewidth: 0.03, // Thicker line
     worldUnits: true,
     transparent: true,
-    opacity: 0.5
+    opacity: 0.8,
   });
 
-  const line = new Line2(lgeo, lmat);
+  const line = new Line2(lineGeometry, lineMaterial);
   line.computeLineDistances();
   line.scale.copy(cube.scale);
   line.position.copy(cube.position);
   scene.add(line);
 });
 
-// --- Reset Button ---
-const btn = document.createElement('button');
-btn.textContent = '🔄 Reset View';
-Object.assign(btn.style, {
-  position: 'absolute', top: '20px',
-  left: '50%', transform: 'translateX(-50%)',
-  padding: '10px 20px', background: 'rgba(0,0,0,0.3)',
-  color: 'white', border: '1px solid white',
-  borderRadius: '8px', cursor: 'pointer', zIndex: 1,
+// Reset Camera Button
+const resetBtn = document.createElement('button');
+resetBtn.textContent = '🔄 Reset View';
+Object.assign(resetBtn.style, {
+  position: 'absolute',
+  top: '20px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  padding: '10px 20px',
+  background: 'rgba(0,0,0,0.3)',
+  color: 'white',
+  border: '1px solid white',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  zIndex: 1,
   backdropFilter: 'blur(5px)'
 });
-btn.onclick = () => {
+resetBtn.onclick = () => {
   gsap.to(camera.position, {
     duration: 1.2,
-    x: 0, y: Math.sin(angleRad) * radius, z: Math.cos(angleRad) * radius,
+    x: 0,
+    y: Math.sin(angleRad) * radius,
+    z: Math.cos(angleRad) * radius,
     onUpdate: () => controls.update()
   });
   gsap.to(controls.target, {
@@ -117,14 +148,16 @@ btn.onclick = () => {
     onUpdate: () => controls.update()
   });
 };
-document.body.appendChild(btn);
+document.body.appendChild(resetBtn);
 
-// --- Resize & Animate ---
+// Responsive
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Animate
 function animate() {
   requestAnimationFrame(animate);
   controls.update();
