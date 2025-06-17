@@ -52,7 +52,6 @@ scene.add(borderLine);
 // === AXIS GUIDE at (-20, 0, -20) ===
 const axisLength = 5;
 const basePos = new THREE.Vector3(-20, 0, -20);
-
 const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
 const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000);
 const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), basePos, axisLength, 0x0000ff);
@@ -78,11 +77,16 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBE ===
+// === CUBES at specific Z coordinates ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
-const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cubeMaterial);
-cube.position.set(2, 1, 1);
-scene.add(cube);
+const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+const zValues = [20, 18, 16, 14, 12, 10, 8, 6, 4, 2];
+
+zValues.forEach(z => {
+  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+  cube.position.set(-9, 1, z);
+  scene.add(cube);
+});
 
 // === TOOLTIP ===
 const tooltip = document.createElement('div');
@@ -103,7 +107,7 @@ window.addEventListener('pointermove', (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObject(cube);
+  const intersects = raycaster.intersectObjects(scene.children.filter(obj => obj.isMesh && obj.geometry.type === 'BoxGeometry'));
   if (intersects.length > 0) {
     const pos = intersects[0].object.position;
     tooltip.innerHTML = `<span style="color:green">X:</span> ${pos.x - 1}<br><span style="color:red">Y:</span> ${pos.y - 1}<br><span style="color:blue">Z:</span> ${pos.z - 1}`;
