@@ -20,6 +20,7 @@ camera.lookAt(0, 0, 0);
 // === RENDERER ===
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
 // === CONTROLS ===
@@ -31,13 +32,38 @@ controls.maxPolarAngle = Math.PI / 2;
 controls.update();
 
 // === LIGHTS ===
-scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+dirLight.position.set(10, 20, 10);
+dirLight.castShadow = true;
+scene.add(dirLight);
+
+// === ENV MAP for GLASS REFLECTION ===
+const path = 'https://threejs.org/examples/textures/cube/Bridge2/';
+const format = '.jpg';
+const urls = [
+  path + 'posx' + format, path + 'negx' + format,
+  path + 'posy' + format, path + 'negy' + format,
+  path + 'posz' + format, path + 'negz' + format
+];
+const envMap = new THREE.CubeTextureLoader().load(urls);
+scene.environment = envMap;
+
+// === PLANE (GROUND) ===
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.ShadowMaterial({ opacity: 0.1 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = 0;
+ground.receiveShadow = true;
+scene.add(ground);
 
 // === GRID ===
 const gridHelper = new THREE.GridHelper(40, 40, 0xcccccc, 0xcccccc);
 scene.add(gridHelper);
 
-// === BORDER (29 x 21) at -9,0,-20 ===
+// === BORDER (29 x 21) ===
 const borderMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
 const borderGeometry = new THREE.BufferGeometry().setFromPoints([
   new THREE.Vector3(-9, 0.01, -20),
@@ -49,13 +75,14 @@ const borderGeometry = new THREE.BufferGeometry().setFromPoints([
 const borderLine = new THREE.Line(borderGeometry, borderMaterial);
 scene.add(borderLine);
 
-// === AXIS GUIDE at (-20, 0, -20) ===
+// === AXIS GUIDE ===
 const axisLength = 5;
 const basePos = new THREE.Vector3(-20, 0, -20);
-const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00);
-const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000);
-const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), basePos, axisLength, 0x0000ff);
-scene.add(arrowX, arrowY, arrowZ);
+scene.add(
+  new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), basePos, axisLength, 0x00ff00),
+  new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), basePos, axisLength, 0xff0000),
+  new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), basePos, axisLength, 0x0000ff)
+);
 
 // === AXIS LABELS ===
 const loader = new FontLoader();
@@ -77,21 +104,49 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBES with white edges (thicker lines) ===
-const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
+// === GLASS & GLOWING CUBES ===
 const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
-const zValues = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2];
+const glassMaterial = new THREE.MeshPhysicalMaterial({
+  color: 0x99ccff,
+  roughness: 0,
+  transmission: 1,
+  thickness: 0.5,
+  metalness: 0,
+  ior: 1.5,
+  envMap: envMap,
+  envMapIntensity: 1.2,
+  transparent: true
+});
+const glowMaterial = new THREE.MeshBasicMaterial({
+  color: 0xffffff,
+  emissive: 0x88ccff,
+  transparent: true,
+  opacity: 0.2
+});
 
-zValues.forEach(z => {
-  const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-  cube.position.set(-8, 1, z);
+// Manually define cube positions
+const cubePositions = [
+  { x: -8, y: 1, z: -20 },
+  { x: -8, y: 1, z: -18 },
+  { x: -8, y: 1, z: -16 },
+  { x: -8, y: 1, z: -14 },
+  { x: -8, y: 1, z: -12 },
+  { x: -8, y: 1, z: -10 },
+  { x: -8, y: 1, z: -8 },
+  { x: -8, y: 1, z: -6 },
+  { x: -8, y: 1, z: -4 },
+  { x: -8, y: 1, z: -2 },
+];
+
+cubePositions.forEach(pos => {
+  const cube = new THREE.Mesh(cubeGeometry, glassMaterial);
+  cube.position.set(pos.x, pos.y, pos.z);
+  cube.castShadow = true;
   scene.add(cube);
 
-  const edges = new THREE.EdgesGeometry(cubeGeometry);
-  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 3, transparent: true, opacity: 0.5 });
-  const line = new THREE.LineSegments(edges, lineMaterial);
-  line.position.copy(cube.position);
-  scene.add(line);
+  const glow = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.1, 2.1), glowMaterial);
+  glow.position.copy(cube.position);
+  scene.add(glow);
 });
 
 // === RESET VIEW BUTTON ===
