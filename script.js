@@ -130,7 +130,7 @@ const glowMaterial = new THREE.MeshBasicMaterial({
 
 // Fixed positions 
 const cubePositions = [
-  { x: -8, y: 1, z: -20 },
+  { x: -8, y: 1, z: -19 },
   { x: -8, y: 1, z: -17 },
   { x: -8, y: 1, z: -15 },
   { x: -8, y: 1, z: -13 },
