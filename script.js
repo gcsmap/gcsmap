@@ -104,10 +104,13 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === GLASS & GLOWING CUBES ===
-const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+// === GLASS & GLOWING CUBES (with spacing) ===
+const cubeSize = 2;
+const spacing = 2.1;
+const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+
 const glassMaterial = new THREE.MeshPhysicalMaterial({
-  color: 0x99ccff,
+  color: 0xbbbbbb,
   roughness: 0,
   transmission: 1,
   thickness: 0.5,
@@ -117,25 +120,26 @@ const glassMaterial = new THREE.MeshPhysicalMaterial({
   envMapIntensity: 1.2,
   transparent: true
 });
+
 const glowMaterial = new THREE.MeshBasicMaterial({
   color: 0xffffff,
   emissive: 0x88ccff,
   transparent: true,
-  opacity: 0.2
+  opacity: 0.15
 });
 
-// Manually define cube positions
+// Fixed positions with gap
 const cubePositions = [
   { x: -8, y: 1, z: -20 },
-  { x: -8, y: 1, z: -18 },
-  { x: -8, y: 1, z: -16 },
-  { x: -8, y: 1, z: -14 },
-  { x: -8, y: 1, z: -12 },
-  { x: -8, y: 1, z: -10 },
-  { x: -8, y: 1, z: -8 },
-  { x: -8, y: 1, z: -6 },
-  { x: -8, y: 1, z: -4 },
-  { x: -8, y: 1, z: -2 },
+  { x: -8, y: 1, z: -17.9 },
+  { x: -8, y: 1, z: -15.8 },
+  { x: -8, y: 1, z: -13.7 },
+  { x: -8, y: 1, z: -11.6 },
+  { x: -8, y: 1, z: -9.5 },
+  { x: -8, y: 1, z: -7.4 },
+  { x: -8, y: 1, z: -5.3 },
+  { x: -8, y: 1, z: -3.2 },
+  { x: -8, y: 1, z: -1.1 }
 ];
 
 cubePositions.forEach(pos => {
@@ -144,7 +148,7 @@ cubePositions.forEach(pos => {
   cube.castShadow = true;
   scene.add(cube);
 
-  const glow = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.1, 2.1), glowMaterial);
+  const glow = new THREE.Mesh(new THREE.BoxGeometry(cubeSize + 0.2, cubeSize + 0.2, cubeSize + 0.2), glowMaterial);
   glow.position.copy(cube.position);
   scene.add(glow);
 });
