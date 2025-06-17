@@ -77,7 +77,7 @@ loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json
   createLabel('Z', 0x0000ff, basePos.clone().add(new THREE.Vector3(0, 0, axisLength + 0.5)));
 });
 
-// === CUBES with white edges ===
+// === CUBES with white edges (thicker lines) ===
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xd3d3d3, transparent: true, opacity: 0.6 });
 const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
 const zValues = [-20, -18, -16, -14, -12, -10, -8, -6, -4, -2];
@@ -88,7 +88,8 @@ zValues.forEach(z => {
   scene.add(cube);
 
   const edges = new THREE.EdgesGeometry(cubeGeometry);
-  const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.3, transparent: true }));
+  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 3, transparent: true, opacity: 0.5 });
+  const line = new THREE.LineSegments(edges, lineMaterial);
   line.position.copy(cube.position);
   scene.add(line);
 });
